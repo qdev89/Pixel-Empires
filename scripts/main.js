@@ -19,6 +19,9 @@ const uiManager = new UIManager(gameState, buildingManager, unitManager, combatM
 // Initialize combat UI
 const combatUI = new CombatUI(gameState, combatManager);
 
+// Initialize events UI
+const eventsUI = new EventsUI(gameState, gameState.eventManager);
+
 // Game loop
 function gameLoop() {
     // Update game state
@@ -26,6 +29,9 @@ function gameLoop() {
 
     // Update UI
     uiManager.updateUI();
+
+    // Update events UI
+    eventsUI.updateUI();
 
     // Schedule next frame
     requestAnimationFrame(gameLoop);

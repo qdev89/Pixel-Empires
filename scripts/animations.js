@@ -10,28 +10,18 @@ class AnimationManager {
 
         // Animation settings
         this.settings = {
-            resourceGain: {
-                duration: 1000, // ms
-                distance: 30, // px
-                fadeStart: 0.7 // when to start fading (0-1)
-            },
             buildingConstruction: {
                 duration: 2000, // ms
                 frames: 5, // number of animation frames
                 interval: 400 // ms between frames
-            },
-            resourceProduction: {
-                duration: 1500, // ms
-                interval: 3000, // ms between animations
-                particleCount: 3
             }
+            // Resource animations removed as per user preference
         };
 
         // Preload animation sprites
         this.sprites = {
-            construction: [],
-            resourceFood: null,
-            resourceOre: null
+            construction: []
+            // Resource sprites removed as per user preference
         };
 
         this.preloadSprites();
@@ -47,13 +37,7 @@ class AnimationManager {
             img.src = `assets/animations/construction${i}.png`;
             this.sprites.construction.push(img);
         }
-
-        // Preload resource sprites
-        this.sprites.resourceFood = new Image();
-        this.sprites.resourceFood.src = 'assets/icons/food.png';
-
-        this.sprites.resourceOre = new Image();
-        this.sprites.resourceOre.src = 'assets/icons/ore.png';
+        // Resource sprites removed as per user preference
     }
 
     /**
@@ -158,13 +142,10 @@ class AnimationManager {
         const progress = (now - anim.startTime) / (anim.endTime - anim.startTime);
 
         // Update based on animation type
-        if (anim.type === 'resourceGain') {
-            this.updateResourceGainAnimation(anim, progress);
-        } else if (anim.type === 'buildingConstruction') {
+        if (anim.type === 'buildingConstruction') {
             this.updateBuildingConstructionAnimation(anim, progress, now);
-        } else if (anim.type === 'resourceParticle') {
-            this.updateResourceParticleAnimation(anim, progress);
         }
+        // Resource animations removed as per user preference
 
         // Continue animation
         requestAnimationFrame(() => this.updateAnimation(animId));

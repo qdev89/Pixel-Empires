@@ -106,19 +106,19 @@ class UIManager {
      * Initialize map controls for zooming and panning
      */
     initializeMapControls() {
-        // Set up zoom in button
+        // Set up zoom in button - enhanced zoom as per user preference
         if (this.elements.mapControls.zoomIn) {
             this.elements.mapControls.zoomIn.addEventListener('click', () => {
-                this.mapZoom = Math.min(this.mapZoom + 0.2, 3.0);
+                this.mapZoom = Math.min(this.mapZoom + 0.3, 4.0); // Increased max zoom
                 this.updateMapTransform();
                 this.updateMinimapViewport();
             });
         }
 
-        // Set up zoom out button
+        // Set up zoom out button - enhanced zoom as per user preference
         if (this.elements.mapControls.zoomOut) {
             this.elements.mapControls.zoomOut.addEventListener('click', () => {
-                this.mapZoom = Math.max(this.mapZoom - 0.2, 0.5);
+                this.mapZoom = Math.max(this.mapZoom - 0.3, 0.3); // Lower min zoom
                 this.updateMapTransform();
                 this.updateMinimapViewport();
             });
@@ -207,7 +207,7 @@ class UIManager {
                 }
             });
 
-            // Mouse wheel zoom
+            // Mouse wheel zoom - enhanced zoom as per user preference
             gameMap.addEventListener('wheel', (e) => {
                 e.preventDefault();
 
@@ -220,13 +220,13 @@ class UIManager {
                 const mapX = (mouseX - this.mapPosition.x) / this.mapZoom;
                 const mapY = (mouseY - this.mapPosition.y) / this.mapZoom;
 
-                // Adjust zoom level
+                // Adjust zoom level with improved zoom speed and range
                 if (e.deltaY < 0) {
                     // Zoom in
-                    this.mapZoom = Math.min(this.mapZoom * 1.1, 3.0);
+                    this.mapZoom = Math.min(this.mapZoom * 1.15, 4.0); // Faster zoom in, higher max zoom
                 } else {
                     // Zoom out
-                    this.mapZoom = Math.max(this.mapZoom * 0.9, 0.5);
+                    this.mapZoom = Math.max(this.mapZoom * 0.85, 0.3); // Faster zoom out, lower min zoom
                 }
 
                 // Calculate new position to keep mouse over same point
@@ -673,21 +673,7 @@ class UIManager {
             const tile = document.createElement('div');
             tile.className = 'building-tile';
 
-            // Add special classes for producing buildings
-            if (building.level > 0) {
-                const level = building.level - 1; // Adjust for 0-based array
-                const effects = buildingConfig.levels[level];
-
-                // Add producing classes for visual effects
-                if (effects.production) {
-                    if (effects.production.FOOD > 0) {
-                        tile.classList.add('producing-food');
-                    }
-                    if (effects.production.ORE > 0) {
-                        tile.classList.add('producing-ore');
-                    }
-                }
-            }
+            // Resource production visual effects removed as per user preference
 
             // Add class for buildings under construction
             if (this.gameState.buildQueue.some(item => item.buildingType === buildingType)) {

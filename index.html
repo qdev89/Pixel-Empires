@@ -32,7 +32,7 @@
                 <div id="game-controls">
                     <button id="save-button" class="control-button">Save</button>
                     <button id="load-button" class="control-button">Load</button>
-                    <button id="cheat-button" class="control-button cheat-button">Unlimited Resources</button>
+                    <button id="cheat-button" class="control-button cheat-button">Test Mode (999999 Resources)</button>
                 </div>
             </div>
         </header>
@@ -60,91 +60,88 @@
             </div>
 
             <div id="game-content">
-                <div id="left-panel">
-                    <div id="player-base" class="game-section">
-                        <div class="section-header">
-                            <h3>Your Empire</h3>
-                        </div>
-                        <div id="buildings-grid">
-                            <!-- Buildings will be rendered here -->
-                        </div>
+                <!-- Single scrollable page layout as per user preference -->
+                <div id="player-base" class="game-section">
+                    <div class="section-header">
+                        <h3>Your Empire</h3>
                     </div>
-
-                    <div id="unit-controls" class="game-section">
-                        <div class="section-header">
-                            <h3>Units</h3>
-                        </div>
-                        <div id="unit-stats">
-                            <div class="unit-stat">
-                                <div class="unit-icon spearman">S</div>
-                                <span id="spearman-count">0</span>
-                            </div>
-                            <div class="unit-stat">
-                                <div class="unit-icon archer">A</div>
-                                <span id="archer-count">0</span>
-                            </div>
-                            <div class="unit-stat">
-                                <div class="unit-icon cavalry">C</div>
-                                <span id="cavalry-count">0</span>
-                            </div>
-                        </div>
-                        <div id="unit-upkeep" class="unit-upkeep">
-                            <div class="upkeep-icon food-icon">F</div>
-                            <span>Food Upkeep: <span id="food-upkeep">0</span>/min</span>
-                        </div>
-                        <div id="training-controls">
-                            <!-- Training controls will be generated here -->
-                        </div>
-                    </div>
-
-                    <div id="combat-controls" class="game-section">
-                        <div class="section-header">
-                            <h3>Combat</h3>
-                        </div>
-                        <button id="attack-button" disabled>Attack</button>
-                        <div id="combat-reports">
-                            <!-- Combat reports will be displayed here -->
-                        </div>
+                    <div id="buildings-grid">
+                        <!-- Buildings will be rendered here -->
                     </div>
                 </div>
 
-                <div id="right-panel">
-                    <div id="building-controls" class="game-section">
-                        <div class="section-header">
-                            <h3>Buildings</h3>
+                <div id="building-controls" class="game-section">
+                    <div class="section-header">
+                        <h3>Buildings</h3>
+                    </div>
+                    <div id="building-buttons">
+                        <!-- Building buttons will be generated here -->
+                    </div>
+                </div>
+
+                <div id="unit-controls" class="game-section">
+                    <div class="section-header">
+                        <h3>Units</h3>
+                    </div>
+                    <div id="unit-stats">
+                        <div class="unit-stat">
+                            <div class="unit-icon spearman">S</div>
+                            <span id="spearman-count">0</span>
                         </div>
-                        <div id="building-buttons">
-                            <!-- Building buttons will be generated here -->
+                        <div class="unit-stat">
+                            <div class="unit-icon archer">A</div>
+                            <span id="archer-count">0</span>
+                        </div>
+                        <div class="unit-stat">
+                            <div class="unit-icon cavalry">C</div>
+                            <span id="cavalry-count">0</span>
                         </div>
                     </div>
+                    <div id="unit-upkeep" class="unit-upkeep">
+                        <div class="upkeep-icon food-icon">F</div>
+                        <span>Food Upkeep: <span id="food-upkeep">0</span>/min</span>
+                    </div>
+                    <div id="training-controls">
+                        <!-- Training controls will be generated here -->
+                    </div>
+                </div>
 
-                    <div id="research-controls" class="game-section">
-                        <div class="section-header">
-                            <h3>Research</h3>
-                        </div>
-                        <div id="research-status">
-                            <div id="current-research">No research in progress</div>
-                            <div id="research-progress-container" class="progress-container">
-                                <div id="research-progress-bar" class="progress-bar"></div>
-                            </div>
-                        </div>
-                        <div id="research-tabs">
-                            <button class="research-tab-button active" data-category="MILITARY">Military</button>
-                            <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
-                            <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
-                        </div>
-                        <div id="research-options">
-                            <!-- Research options will be generated here -->
+                <div id="combat-controls" class="game-section">
+                    <div class="section-header">
+                        <h3>Combat</h3>
+                    </div>
+                    <button id="attack-button" disabled>Attack</button>
+                    <div id="combat-reports">
+                        <!-- Combat reports will be displayed here -->
+                    </div>
+                </div>
+
+                <div id="research-controls" class="game-section">
+                    <div class="section-header">
+                        <h3>Research</h3>
+                    </div>
+                    <div id="research-status">
+                        <div id="current-research">No research in progress</div>
+                        <div id="research-progress-container" class="progress-container">
+                            <div id="research-progress-bar" class="progress-bar"></div>
                         </div>
                     </div>
+                    <div id="research-tabs">
+                        <button class="research-tab-button active" data-category="MILITARY">Military</button>
+                        <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
+                        <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
+                    </div>
+                    <div id="research-options">
+                        <!-- Research options will be generated here -->
+                    </div>
+                </div>
 
-                    <div id="events-section" class="game-section">
-                        <div class="section-header">
-                            <h3>Recent Events</h3>
-                        </div>
-                        <div id="event-history">
-                            <!-- Event history will be displayed here -->
-                        </div>
+                <div id="events-section" class="game-section">
+                    <div class="section-header">
+                        <h3>Recent Events</h3>
+                    </div>
+                    <div id="event-history">
+                        <!-- Event history will be displayed here -->
                     </div>
                 </div>
             </div>
@@ -282,12 +279,14 @@
     <!-- Game scripts -->
     <script src="scripts/asset-loader.js"></script>
     <script src="scripts/config.js"></script>
+    <script src="scripts/events-config.js"></script>
     <script src="scripts/events.js"></script>
     <script src="scripts/activity-log.js"></script>
     <script src="scripts/save-system.js"></script>
     <script src="scripts/animations.js"></script>
     <script src="scripts/unit-animations.js"></script>
     <script src="scripts/gameState.js"></script>
+    <script src="scripts/challenges.js"></script>
     <script src="scripts/buildings.js"></script>
     <script src="scripts/units.js"></script>
     <script src="scripts/combat.js"></script>

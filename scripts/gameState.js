@@ -39,11 +39,35 @@ class GameState {
             defensiveCasualtyReduction: 0
         };
 
+        // Initialize event bonuses
+        this.eventBonuses = {
+            foodProduction: 1.0,
+            oreProduction: 1.0,
+            constructionSpeed: 1.0,
+            researchSpeed: 1.0,
+            trainingSpeed: 1.0
+        };
+
+        // Initialize temporary bonuses
+        this.temporaryBonuses = [];
+
+        // Initialize event tracking
+        this.eventTracking = {
+            resourcesProduced: {},
+            defeatedEnemies: {},
+            buildingsConstructed: 0,
+            researchCompleted: 0,
+            unitsTrained: 0
+        };
+
         // Initialize map with NPC camps
         this.initializeMap();
 
         // Initialize event manager
         this.eventManager = new EventManager(this);
+
+        // Initialize challenge manager
+        this.challengeManager = new ChallengeManager(this);
 
         // Initialize activity log manager
         this.activityLogManager = new ActivityLogManager(this);
@@ -122,6 +146,14 @@ class GameState {
         if (this.eventManager) {
             this.eventManager.update();
         }
+
+        // Update challenge manager
+        if (this.challengeManager) {
+            this.challengeManager.update();
+        }
+
+        // Update temporary bonuses
+        this.updateTemporaryBonuses();
     }
 
     /**
@@ -153,16 +185,30 @@ class GameState {
             oreProduction *= (1 + this.bonuses.oreProduction);
         }
 
+        // Apply event bonuses
+        foodProduction *= this.eventBonuses.foodProduction;
+        oreProduction *= this.eventBonuses.oreProduction;
+
+        // Calculate actual gains
+        const foodGain = foodProduction * deltaTime;
+        const oreGain = oreProduction * deltaTime;
+
         // Apply production
         this.resources.FOOD = Math.min(
-            this.resources.FOOD + (foodProduction * deltaTime),
+            this.resources.FOOD + foodGain,
             this.storageCapacity.FOOD
         );
 
         this.resources.ORE = Math.min(
-            this.resources.ORE + (oreProduction * deltaTime),
+            this.resources.ORE + oreGain,
             this.storageCapacity.ORE
         );
+
+        // Track resource production for events
+        if (this.challengeManager) {
+            this.challengeManager.trackResourceProduction('FOOD', foodGain);
+            this.challengeManager.trackResourceProduction('ORE', oreGain);
+        }
     }
 
     /**
@@ -202,13 +248,21 @@ class GameState {
      */
     processBuildQueue(deltaTime) {
         if (this.buildQueue.length > 0) {
+            // Apply event bonuses to construction speed
+            const speedMultiplier = this.eventBonuses.constructionSpeed;
+
             const currentBuild = this.buildQueue[0];
-            currentBuild.timeRemaining -= deltaTime;
+            currentBuild.timeRemaining -= deltaTime * speedMultiplier;
 
             if (currentBuild.timeRemaining <= 0) {
                 // Building is complete
                 this.completeBuildingConstruction(currentBuild);
                 this.buildQueue.shift();
+
+                // Track building construction for events
+                if (this.challengeManager) {
+                    this.challengeManager.trackBuildingConstruction();
+                }
             }
         }
     }
@@ -246,13 +300,21 @@ class GameState {
      */
     processTrainingQueue(deltaTime) {
         if (this.trainingQueue.length > 0) {
+            // Apply event bonuses to training speed
+            const speedMultiplier = this.eventBonuses.trainingSpeed;
+
             const currentTraining = this.trainingQueue[0];
-            currentTraining.timeRemaining -= deltaTime;
+            currentTraining.timeRemaining -= deltaTime * speedMultiplier;
 
             if (currentTraining.timeRemaining <= 0) {
                 // Training is complete
                 this.completeUnitTraining(currentTraining);
                 this.trainingQueue.shift();
+
+                // Track unit training for events
+                if (this.challengeManager) {
+                    this.challengeManager.trackUnitTraining(currentTraining.quantity);
+                }
             }
         }
     }
@@ -518,6 +580,9 @@ class GameState {
             }
         };
 
+        // Store the event ID if this is an event-related enemy
+        const eventId = target.eventId;
+
         if (playerAttack > npcDefense) {
             // Player wins
             report.result = 'victory';
@@ -603,6 +668,11 @@ class GameState {
             this.units.SPEARMAN += survivingSpearmen;
             this.units.ARCHER += survivingArchers;
             this.units.CAVALRY += survivingCavalry;
+
+            // Track enemy defeat for events if this was an event-related enemy
+            if (eventId && this.challengeManager) {
+                this.challengeManager.trackEnemyDefeat(target.campType, eventId);
+            }
         } else {
             // Player loses
             report.result = 'defeat';
@@ -632,6 +702,94 @@ class GameState {
      */
     getGameTime() {
         return Math.floor((Date.now() - this.gameStartTime) / 1000);
+    }
+
+    /**
+     * Update temporary bonuses and remove expired ones
+     */
+    updateTemporaryBonuses() {
+        const currentTime = this.getGameTime();
+        const activeBonuses = [];
+
+        for (const bonus of this.temporaryBonuses) {
+            if (currentTime < bonus.endTime) {
+                activeBonuses.push(bonus);
+            }
+        }
+
+        // Replace the array with only active bonuses
+        this.temporaryBonuses = activeBonuses;
+    }
+
+    /**
+     * Spawn an NPC camp for an event
+     */
+    spawnEventNPC(campType, difficultyMultiplier, eventId) {
+        // Find an empty cell for the camp
+        const emptyCells = [];
+
+        for (let y = 0; y < this.mapSize.height; y++) {
+            for (let x = 0; x < this.mapSize.width; x++) {
+                if (!this.map[y][x]) {
+                    emptyCells.push({x, y});
+                }
+            }
+        }
+
+        if (emptyCells.length === 0) {
+            console.error('No empty cells for event NPC');
+            return null;
+        }
+
+        // Select a random empty cell
+        const cell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+
+        // Create the NPC camp
+        const npcCamp = {
+            type: 'NPC',
+            campType: campType,
+            id: 'event_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+            eventId: eventId,
+            difficultyMultiplier: difficultyMultiplier
+        };
+
+        // Place on map
+        this.map[cell.y][cell.x] = npcCamp;
+
+        // Log the event
+        this.activityLogManager.addLogEntry(
+            'Event',
+            `A ${CONFIG.NPC_CAMPS[campType].name} has appeared on the map!`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+
+        return npcCamp;
+    }
+
+    /**
+     * Get count of buildings of a specific type
+     */
+    getBuildingCount(buildingType) {
+        let count = 0;
+
+        // Count buildings in the buildings object
+        if (this.buildings[buildingType] && this.buildings[buildingType].level > 0) {
+            count++;
+        }
+
+        // Count buildings on the map
+        for (let y = 0; y < this.mapSize.height; y++) {
+            for (let x = 0; x < this.mapSize.width; x++) {
+                const cell = this.map[y][x];
+                if (cell && cell.type === 'BUILDING' && cell.buildingType === buildingType) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -674,8 +832,13 @@ class GameState {
         this.resources.FOOD = 999999;
         this.resources.ORE = 999999;
 
+        // Also add some units for testing
+        this.units.SPEARMAN = 999;
+        this.units.ARCHER = 999;
+        this.units.CAVALRY = 999;
+
         // Log the action
-        this.activityLogManager.addLogEntry('System', 'Unlimited resources activated for testing');
+        this.activityLogManager.addLogEntry('System', 'Unlimited resources and units activated for testing');
 
         // Trigger UI update
         this.onStateChange();
