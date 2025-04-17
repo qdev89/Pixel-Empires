@@ -163,6 +163,16 @@ class CombatManager {
             // Resolve the actual combat
             const report = this.gameState.resolveCombat(combat.target, combat.units);
 
+            // Log the combat result
+            const campName = CONFIG.NPC_CAMPS[combat.target.campType].name;
+            if (report.result === 'victory') {
+                this.gameState.activityLogManager.addLogEntry('Combat',
+                    `Victory against ${campName}! Gained ${report.loot.FOOD} food and ${report.loot.ORE} ore.`);
+            } else {
+                this.gameState.activityLogManager.addLogEntry('Combat',
+                    `Defeat against ${campName}. All units were lost.`);
+            }
+
             // Update battle animation based on result
             if (report.result === 'defeat') {
                 // Update animation to show player defeat

@@ -34,9 +34,15 @@ class UIManager {
                 food: document.getElementById('food-count'),
                 ore: document.getElementById('ore-count')
             },
-            turn: {
-                counter: document.getElementById('turn-counter'),
-                nextButton: document.getElementById('next-turn-button')
+            gameInfo: {
+                timer: document.getElementById('game-timer'),
+                onlineStatus: document.getElementById('online-status'),
+                statusIndicator: document.querySelector('.status-indicator')
+            },
+            gameControls: {
+                saveButton: document.getElementById('save-button'),
+                loadButton: document.getElementById('load-button'),
+                cheatButton: document.getElementById('cheat-button')
             },
             buildingsGrid: document.getElementById('buildings-grid'),
             buildingButtons: document.getElementById('building-buttons'),
@@ -76,10 +82,10 @@ class UIManager {
         this.renderMap();
         this.updateUI();
 
-        // Set up next turn button
-        if (this.elements.turn.nextButton) {
-            this.elements.turn.nextButton.addEventListener('click', () => {
-                this.gameState.nextTurn();
+        // Set up online status toggle (for demonstration)
+        if (this.elements.gameInfo.onlineStatus) {
+            this.elements.gameInfo.onlineStatus.addEventListener('click', () => {
+                this.gameState.toggleOnlineStatus();
             });
         }
 
@@ -284,6 +290,10 @@ class UIManager {
                         const playerIcon = document.createElement('div');
                         playerIcon.className = 'unit-display';
                         playerIcon.dataset.unitType = 'spearman';
+
+                        // Add fallback text if needed
+                        playerIcon.textContent = 'P';
+
                         cell.appendChild(playerIcon);
                         cell.textContent = '';
                         cell.title = 'Player Base';
@@ -295,6 +305,10 @@ class UIManager {
                         const enemyIcon = document.createElement('div');
                         enemyIcon.className = 'unit-display';
                         enemyIcon.dataset.unitType = enemyType;
+
+                        // Add fallback text if needed
+                        enemyIcon.textContent = enemyType === 'goblin' ? 'G' : 'B';
+
                         cell.appendChild(enemyIcon);
                         cell.textContent = '';
                         cell.title = `${CONFIG.NPC_CAMPS[mapCell.campType].name} (Difficulty: ${mapCell.difficulty || CONFIG.NPC_CAMPS[mapCell.campType].difficulty})`;
@@ -325,9 +339,18 @@ class UIManager {
         this.elements.resources.food.textContent = Math.floor(this.gameState.resources.FOOD);
         this.elements.resources.ore.textContent = Math.floor(this.gameState.resources.ORE);
 
-        // Update turn counter
-        if (this.elements.turn.counter) {
-            this.elements.turn.counter.textContent = `Turn ${this.gameState.turn}`;
+        // Update game timer
+        if (this.elements.gameInfo.timer) {
+            this.elements.gameInfo.timer.textContent = this.gameState.getFormattedGameTime();
+        }
+
+        // Update online status
+        if (this.elements.gameInfo.statusIndicator) {
+            if (this.gameState.isOnline) {
+                this.elements.gameInfo.statusIndicator.classList.remove('offline');
+            } else {
+                this.elements.gameInfo.statusIndicator.classList.add('offline');
+            }
         }
 
         // Update buildings grid
@@ -341,6 +364,12 @@ class UIManager {
             document.getElementById('spearman-count').textContent = this.gameState.units.SPEARMAN;
             document.getElementById('archer-count').textContent = this.gameState.units.ARCHER;
             document.getElementById('cavalry-count').textContent = this.gameState.units.CAVALRY;
+
+            // Update food upkeep display
+            const foodUpkeep = this.unitManager.calculateTotalUpkeep().FOOD;
+            // Convert to per minute (since we reduced the rate by 10x)
+            const foodUpkeepPerMinute = Math.round(foodUpkeep * 60 * 10) / 10;
+            document.getElementById('food-upkeep').textContent = foodUpkeepPerMinute;
         }
 
         // Update training controls

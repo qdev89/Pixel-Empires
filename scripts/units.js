@@ -74,7 +74,9 @@ class UnitManager {
         let totalFoodUpkeep = 0;
 
         for (const [unitType, count] of Object.entries(this.gameState.units)) {
-            totalFoodUpkeep += CONFIG.UNITS[unitType].upkeep.FOOD * count;
+            // Use the same reduced upkeep rate as in gameState.js
+            const upkeepRate = CONFIG.UNITS[unitType].upkeep.FOOD / 10;
+            totalFoodUpkeep += upkeepRate * count;
         }
 
         return { FOOD: totalFoodUpkeep };

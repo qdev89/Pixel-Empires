@@ -7,7 +7,11 @@ class EventManager {
         this.gameState = gameState;
         this.activeEvent = null;
         this.eventCooldown = 0;
+        this.lastEventTime = 0;
         this.eventHistory = [];
+
+        // Event check interval (in seconds)
+        this.eventCheckInterval = 60; // Check for events every minute
         this.eventTypes = {
             RESOURCE_BONUS: {
                 id: 'RESOURCE_BONUS',
@@ -48,13 +52,17 @@ class EventManager {
     }
 
     /**
-     * Update the event system each turn
+     * Update the event system in real-time
      */
     update() {
-        // Decrease cooldown if active
+        const currentTime = this.gameState.getGameTime();
+
+        // Check if cooldown has expired
         if (this.eventCooldown > 0) {
-            this.eventCooldown--;
-            return;
+            if (currentTime - this.lastEventTime < this.eventCooldown) {
+                return;
+            }
+            this.eventCooldown = 0;
         }
 
         // Don't trigger events if one is already active
@@ -62,9 +70,16 @@ class EventManager {
             return;
         }
 
-        // Random chance to trigger an event
-        if (Math.random() < 0.15) { // 15% chance per turn
-            this.triggerRandomEvent();
+        // Check if it's time for an event check
+        if (currentTime - this.lastEventTime >= this.eventCheckInterval) {
+            // Random chance to trigger an event (5% chance per check)
+            if (Math.random() < 0.05) {
+                this.triggerRandomEvent();
+                this.lastEventTime = currentTime;
+            } else {
+                // Update last check time even if no event triggered
+                this.lastEventTime = currentTime;
+            }
         }
     }
 
@@ -72,27 +87,28 @@ class EventManager {
      * Trigger a random event based on probabilities
      */
     triggerRandomEvent() {
-        // Get current turn
-        const currentTurn = this.gameState.turn;
-        
-        // Filter events that are eligible based on minimum turn requirement
+        // Get current game time in minutes
+        const currentGameMinutes = Math.floor(this.gameState.getGameTime() / 60);
+
+        // Filter events that are eligible based on minimum time requirement
+        // Convert minTurn to minutes (roughly 1 turn = 2 minutes of gameplay)
         const eligibleEvents = Object.values(this.eventTypes).filter(
-            event => currentTurn >= event.minTurn
+            event => currentGameMinutes >= (event.minTurn * 2)
         );
-        
+
         if (eligibleEvents.length === 0) {
             return; // No eligible events yet
         }
-        
+
         // Calculate total probability
         const totalProbability = eligibleEvents.reduce(
             (sum, event) => sum + event.probability, 0
         );
-        
+
         // Select a random event based on weighted probability
         let random = Math.random() * totalProbability;
         let selectedEvent = null;
-        
+
         for (const event of eligibleEvents) {
             random -= event.probability;
             if (random <= 0) {
@@ -100,7 +116,7 @@ class EventManager {
                 break;
             }
         }
-        
+
         if (selectedEvent) {
             this.triggerEvent(selectedEvent.id);
         }
@@ -113,26 +129,27 @@ class EventManager {
     triggerEvent(eventId) {
         const eventType = this.eventTypes[eventId];
         if (!eventType) return;
-        
+
         // Create event instance
         const event = {
             id: eventType.id,
             name: eventType.name,
             description: eventType.description,
-            turn: this.gameState.turn,
+            timestamp: Date.now(),
+            gameTime: this.gameState.getGameTime(),
             options: this.generateEventOptions(eventId),
             resolved: false
         };
-        
+
         // Set as active event
         this.activeEvent = event;
-        
+
         // Add to history
         this.eventHistory.push(event);
-        
+
         // Notify UI
         this.gameState.onStateChange();
-        
+
         // Show event modal
         if (window.ui) {
             window.ui.showEventModal(event);
@@ -167,7 +184,7 @@ class EventManager {
     generateResourceBonusOptions() {
         const foodBonus = Math.floor(20 + Math.random() * 30);
         const oreBonus = Math.floor(15 + Math.random() * 25);
-        
+
         return [
             {
                 id: 'take_food',
@@ -206,7 +223,7 @@ class EventManager {
     generateEnemyRaidOptions() {
         const defenderCount = Math.floor(5 + Math.random() * 10);
         const foodLoss = Math.floor(10 + Math.random() * 20);
-        
+
         return [
             {
                 id: 'defend',
@@ -259,7 +276,7 @@ class EventManager {
      */
     generateTraderOptions() {
         const tradeAmount = Math.floor(15 + Math.random() * 15);
-        
+
         return [
             {
                 id: 'buy_food',
@@ -300,7 +317,7 @@ class EventManager {
     generateDiscoveryOptions() {
         // Get available research options
         const availableResearch = this.gameState.researchManager.getAvailableResearch();
-        
+
         if (availableResearch.length === 0) {
             // If no research is available, give resource bonus instead
             const bonus = Math.floor(20 + Math.random() * 20);
@@ -317,15 +334,15 @@ class EventManager {
                 }
             ];
         }
-        
+
         // Select up to 2 random research options
         const selectedResearch = [];
         const shuffled = [...availableResearch].sort(() => 0.5 - Math.random());
-        
+
         for (let i = 0; i < Math.min(2, shuffled.length); i++) {
             selectedResearch.push(shuffled[i]);
         }
-        
+
         // Create options
         const options = selectedResearch.map(research => ({
             id: `research_${research.id}`,
@@ -337,7 +354,7 @@ class EventManager {
                 this.resolveEvent(`Your scholars made significant progress on ${research.name} research.`);
             }
         }));
-        
+
         // Add decline option
         options.push({
             id: 'ignore',
@@ -351,7 +368,7 @@ class EventManager {
                 this.resolveEvent(`You focused on immediate concerns and gained ${smallBonus} food and ${smallBonus} ore.`);
             }
         });
-        
+
         return options;
     }
 
@@ -361,7 +378,7 @@ class EventManager {
     generateDisasterOptions() {
         const foodLoss = Math.floor(15 + Math.random() * 25);
         const buildingDamage = Math.random() < 0.5 ? 'FARM' : 'MINE';
-        
+
         return [
             {
                 id: 'evacuate',
@@ -382,7 +399,7 @@ class EventManager {
                     // Lose less resources but building takes damage
                     this.gameState.resources.FOOD -= Math.floor(foodLoss * 0.6);
                     this.gameState.resources.ORE -= Math.floor(foodLoss * 0.3);
-                    
+
                     // Damage building if it exists and has level > 0
                     if (this.gameState.buildings[buildingDamage] && this.gameState.buildings[buildingDamage].level > 0) {
                         this.gameState.buildings[buildingDamage].level -= 1;
@@ -413,17 +430,18 @@ class EventManager {
      */
     resolveEvent(outcome) {
         if (!this.activeEvent) return;
-        
+
         // Mark event as resolved
         this.activeEvent.resolved = true;
         this.activeEvent.outcome = outcome;
-        
+
         // Clear active event
         this.activeEvent = null;
-        
-        // Set cooldown before next event
-        this.eventCooldown = 3; // Wait 3 turns before next event
-        
+
+        // Set cooldown before next event (in seconds)
+        this.eventCooldown = 180; // Wait 3 minutes before next event
+        this.lastEventTime = this.gameState.getGameTime();
+
         // Update game state
         this.gameState.onStateChange();
     }

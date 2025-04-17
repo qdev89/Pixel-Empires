@@ -14,11 +14,12 @@ class GameState {
 
         // Additional state properties
         this.lastTick = Date.now();
+        this.gameStartTime = Date.now();
         this.buildQueue = [];
         this.trainingQueue = [];
         this.researchQueue = [];
         this.combatReports = [];
-        this.turn = 1; // Game turn counter
+        this.isOnline = true; // Online status
 
         // Calculate initial storage capacity
         this.storageCapacity = {
@@ -44,9 +45,11 @@ class GameState {
         // Initialize event manager
         this.eventManager = new EventManager(this);
 
-        // Initialize turn summary manager
-        this.turnSummaryManager = new TurnSummaryManager(this);
-        this.turnSummaryManager.prepareSummary(); // Prepare for the first turn
+        // Initialize activity log manager
+        this.activityLogManager = new ActivityLogManager(this);
+
+        // Add initial log entry
+        this.activityLogManager.addLogEntry('System', 'Game started');
 
         // Initialize save system
         this.saveSystem = new SaveSystem(this);
@@ -208,13 +211,18 @@ class GameState {
      */
     completeBuildingConstruction(buildItem) {
         const buildingType = buildItem.buildingType;
+        const buildingName = CONFIG.BUILDINGS[buildingType].name;
 
         // If building doesn't exist, create it
         if (!this.buildings[buildingType]) {
             this.buildings[buildingType] = { level: 1, x: buildItem.x, y: buildItem.y };
+            // Log the construction
+            this.activityLogManager.addLogEntry('Building', `Constructed ${buildingName} (Level 1)`);
         } else {
             // Otherwise upgrade it
             this.buildings[buildingType].level++;
+            // Log the upgrade
+            this.activityLogManager.addLogEntry('Building', `Upgraded ${buildingName} to Level ${this.buildings[buildingType].level}`);
         }
 
         // Recalculate storage capacity if we built/upgraded a warehouse
@@ -247,7 +255,11 @@ class GameState {
      */
     completeUnitTraining(trainingItem) {
         const unitType = trainingItem.unitType;
+        const unitName = CONFIG.UNITS[unitType].name;
         this.units[unitType] += trainingItem.quantity;
+
+        // Log the training completion
+        this.activityLogManager.addLogEntry('Training', `Trained ${trainingItem.quantity} ${unitName}${trainingItem.quantity > 1 ? 's' : ''}`);
 
         // Trigger UI update
         this.onStateChange();
@@ -261,7 +273,11 @@ class GameState {
 
         // Calculate total food upkeep
         for (const [unitType, count] of Object.entries(this.units)) {
-            totalFoodUpkeep += CONFIG.UNITS[unitType].upkeep.FOOD * count;
+            // Reduce the upkeep rate to make it more balanced
+            // Original upkeep is per second, but it's too fast
+            // Divide by 10 to make it 10x slower (effectively per 10 seconds)
+            const upkeepRate = CONFIG.UNITS[unitType].upkeep.FOOD / 10;
+            totalFoodUpkeep += upkeepRate * count;
         }
 
         // Apply upkeep (per second)
@@ -489,20 +505,52 @@ class GameState {
     }
 
     /**
-     * Advance to the next turn
+     * Get the current game time in seconds
+     * @returns {number} - The game time in seconds
      */
-    nextTurn() {
-        // Process turn summary before advancing the turn
-        if (this.turnSummaryManager) {
-            this.turnSummaryManager.processTurn();
-        }
+    getGameTime() {
+        return Math.floor((Date.now() - this.gameStartTime) / 1000);
+    }
 
-        this.turn++;
+    /**
+     * Format the game time as HH:MM:SS
+     * @returns {string} - The formatted game time
+     */
+    getFormattedGameTime() {
+        const totalSeconds = this.getGameTime();
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
 
-        // Update event manager
-        if (this.eventManager) {
-            this.eventManager.update();
-        }
+        return [
+            hours.toString().padStart(2, '0'),
+            minutes.toString().padStart(2, '0'),
+            seconds.toString().padStart(2, '0')
+        ].join(':');
+    }
+
+    /**
+     * Toggle online status (for demonstration purposes)
+     */
+    toggleOnlineStatus() {
+        this.isOnline = !this.isOnline;
+        this.onStateChange();
+    }
+
+    /**
+     * Set unlimited resources for testing
+     */
+    setUnlimitedResources() {
+        // Set all resources to 999999
+        this.resources.FOOD = 999999;
+        this.resources.ORE = 999999;
+
+        // Increase storage capacity to hold the resources
+        this.storageCapacity.FOOD = 1000000;
+        this.storageCapacity.ORE = 1000000;
+
+        // Log the action
+        this.activityLogManager.addLogEntry('System', 'Unlimited resources activated for testing');
 
         // Trigger UI update
         this.onStateChange();

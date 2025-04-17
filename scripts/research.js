@@ -119,9 +119,13 @@ class ResearchManager {
      */
     completeResearch(research) {
         const { category, techId } = research;
+        const techName = CONFIG.TECHNOLOGIES[category][techId].name;
 
         // Mark as researched
         this.gameState.technologies[category][techId] = true;
+
+        // Log the research completion
+        this.gameState.activityLogManager.addLogEntry('Research', `Completed research: ${techName}`);
 
         // Apply technology effects
         this.applyTechnologyEffects();

@@ -35,19 +35,8 @@ function gameLoop() {
 const cheatButton = document.getElementById('cheat-button');
 if (cheatButton) {
     cheatButton.addEventListener('click', () => {
-        // Set resources to a very high number
-        gameState.resources.FOOD = 9999999;
-        gameState.resources.ORE = 9999999;
-
-        // Increase storage capacity to hold the resources
-        gameState.storageCapacity.FOOD = 10000000;
-        gameState.storageCapacity.ORE = 10000000;
-
-        // Update UI
-        uiManager.updateUI();
-
-        // Show feedback
-        alert('Unlimited resources activated!');
+        // Use our setUnlimitedResources method
+        gameState.setUnlimitedResources();
     });
 }
 

@@ -13,9 +13,9 @@
                 <h1>Pixel Empires</h1>
             </div>
             <div class="header-center">
-                <div id="turn-info">
-                    <span id="turn-counter">Turn 1</span>
-                    <button id="next-turn-button">Next Turn</button>
+                <div id="game-info">
+                    <div id="game-timer">00:00:00</div>
+                    <div id="online-status" class="online-status">Online <span class="status-indicator"></span></div>
                 </div>
             </div>
             <div class="header-right">
@@ -80,6 +80,10 @@
                                 <div class="unit-icon cavalry">C</div>
                                 <span id="cavalry-count">0</span>
                             </div>
+                        </div>
+                        <div id="unit-upkeep" class="unit-upkeep">
+                            <div class="upkeep-icon food-icon">F</div>
+                            <span>Food Upkeep: <span id="food-upkeep">0</span>/min</span>
                         </div>
                         <div id="training-controls">
                             <!-- Training controls will be generated here -->
@@ -151,15 +155,15 @@
             </div>
         </div>
 
-        <!-- Turn Summary Modal -->
-        <div id="turn-summary-modal" class="modal">
-            <div id="turn-summary-content" class="modal-content">
-                <span id="turn-summary-close" class="close-button">&times;</span>
-                <h3>Turn Summary</h3>
-                <div id="turn-summary-container">
-                    <!-- Turn summary will be dynamically generated -->
+        <!-- Activity Log Modal -->
+        <div id="activity-log-modal" class="modal">
+            <div id="activity-log-content" class="modal-content">
+                <span id="activity-log-close" class="close-button">&times;</span>
+                <h3>Activity Log</h3>
+                <div id="activity-log-container">
+                    <!-- Activity log will be dynamically generated -->
                 </div>
-                <button id="turn-summary-continue" class="continue-button">Continue</button>
+                <button id="activity-log-close-button" class="continue-button">Close</button>
             </div>
         </div>
 
@@ -232,9 +236,10 @@
     </div>
 
     <!-- Game scripts -->
+    <script src="scripts/asset-loader.js"></script>
     <script src="scripts/config.js"></script>
     <script src="scripts/events.js"></script>
-    <script src="scripts/turn-summary.js"></script>
+    <script src="scripts/activity-log.js"></script>
     <script src="scripts/save-system.js"></script>
     <script src="scripts/animations.js"></script>
     <script src="scripts/unit-animations.js"></script>
