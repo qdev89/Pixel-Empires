@@ -10,9 +10,23 @@ class UIManager {
         this.unitManager = unitManager;
         this.combatManager = combatManager;
         this.researchManager = researchManager;
+        this.animationManager = animationManager; // Use the global animation manager
+
+        // Initialize events UI if event manager exists
+        if (this.gameState.eventManager) {
+            this.eventsUI = new EventsUI(this.gameState, this.gameState.eventManager);
+        }
+
+        // Initialize save UI if save system exists
+        if (this.gameState.saveSystem) {
+            this.saveUI = new SaveUI(this.gameState, this.gameState.saveSystem);
+        }
 
         // Set up state change handler
         this.gameState.onStateChange = () => this.updateUI();
+
+        // Map zoom level
+        this.mapZoom = 1;
 
         // DOM elements
         this.elements = {
@@ -20,17 +34,22 @@ class UIManager {
                 food: document.getElementById('food-count'),
                 ore: document.getElementById('ore-count')
             },
+            turn: {
+                counter: document.getElementById('turn-counter'),
+                nextButton: document.getElementById('next-turn-button')
+            },
             buildingsGrid: document.getElementById('buildings-grid'),
             buildingButtons: document.getElementById('building-buttons'),
-            unitStats: {
-                spearman: document.getElementById('spearman-count'),
-                archer: document.getElementById('archer-count'),
-                cavalry: document.getElementById('cavalry-count')
-            },
+            unitStats: document.getElementById('unit-stats'),
             trainingControls: document.getElementById('training-controls'),
             attackButton: document.getElementById('attack-button'),
             combatReports: document.getElementById('combat-reports'),
             gameMap: document.getElementById('game-map'),
+            mapControls: {
+                zoomIn: document.getElementById('zoom-in'),
+                zoomOut: document.getElementById('zoom-out'),
+                resetZoom: document.getElementById('reset-zoom')
+            },
             research: {
                 currentResearch: document.getElementById('current-research'),
                 progressBar: document.getElementById('research-progress-bar'),
@@ -53,10 +72,57 @@ class UIManager {
         this.createBuildingButtons();
         this.createTrainingControls();
         this.initializeResearchUI();
+        this.initializeMapControls();
         this.renderMap();
         this.updateUI();
 
+        // Set up next turn button
+        if (this.elements.turn.nextButton) {
+            this.elements.turn.nextButton.addEventListener('click', () => {
+                this.gameState.nextTurn();
+            });
+        }
+
         // Resource production animations disabled as per user request
+    }
+
+    /**
+     * Initialize map controls for zooming
+     */
+    initializeMapControls() {
+        // Set up zoom in button
+        if (this.elements.mapControls.zoomIn) {
+            this.elements.mapControls.zoomIn.addEventListener('click', () => {
+                this.mapZoom = Math.min(this.mapZoom + 0.2, 2.0);
+                this.updateMapZoom();
+            });
+        }
+
+        // Set up zoom out button
+        if (this.elements.mapControls.zoomOut) {
+            this.elements.mapControls.zoomOut.addEventListener('click', () => {
+                this.mapZoom = Math.max(this.mapZoom - 0.2, 0.5);
+                this.updateMapZoom();
+            });
+        }
+
+        // Set up reset zoom button
+        if (this.elements.mapControls.resetZoom) {
+            this.elements.mapControls.resetZoom.addEventListener('click', () => {
+                this.mapZoom = 1.0;
+                this.updateMapZoom();
+            });
+        }
+    }
+
+    /**
+     * Update map zoom level
+     */
+    updateMapZoom() {
+        const mapGrid = this.elements.gameMap.querySelector('.map-grid');
+        if (mapGrid) {
+            mapGrid.style.transform = `scale(${this.mapZoom})`;
+        }
     }
 
     /**
@@ -111,7 +177,7 @@ class UIManager {
                 for (const tile of buildingTiles) {
                     const nameElement = tile.querySelector('.building-name');
                     if (nameElement && nameElement.textContent === buildingConfig.name) {
-                        animationManager.createBuildingConstructionAnimation(buildingType, tile, () => {
+                        this.animationManager.createBuildingConstructionAnimation(buildingType, tile, () => {
                             // Animation complete callback
                             this.updateBuildingsGrid();
                         });
@@ -246,6 +312,9 @@ class UIManager {
         }
 
         mapElement.appendChild(mapGrid);
+
+        // Apply current zoom level
+        this.updateMapZoom();
     }
 
     /**
@@ -256,6 +325,11 @@ class UIManager {
         this.elements.resources.food.textContent = Math.floor(this.gameState.resources.FOOD);
         this.elements.resources.ore.textContent = Math.floor(this.gameState.resources.ORE);
 
+        // Update turn counter
+        if (this.elements.turn.counter) {
+            this.elements.turn.counter.textContent = `Turn ${this.gameState.turn}`;
+        }
+
         // Update buildings grid
         this.updateBuildingsGrid();
 
@@ -263,9 +337,11 @@ class UIManager {
         this.updateBuildingButtons();
 
         // Update unit stats
-        this.elements.unitStats.spearman.innerHTML = `<div class="unit-display" data-unit-type="spearman"></div> ${this.gameState.units.SPEARMAN}`;
-        this.elements.unitStats.archer.innerHTML = `<div class="unit-display" data-unit-type="archer"></div> ${this.gameState.units.ARCHER}`;
-        this.elements.unitStats.cavalry.innerHTML = `<div class="unit-display" data-unit-type="cavalry"></div> ${this.gameState.units.CAVALRY}`;
+        if (this.elements.unitStats) {
+            document.getElementById('spearman-count').textContent = this.gameState.units.SPEARMAN;
+            document.getElementById('archer-count').textContent = this.gameState.units.ARCHER;
+            document.getElementById('cavalry-count').textContent = this.gameState.units.CAVALRY;
+        }
 
         // Update training controls
         this.updateTrainingControls();
@@ -279,6 +355,11 @@ class UIManager {
 
         // Update combat reports
         this.updateCombatReports();
+
+        // Update event history if events UI exists
+        if (this.eventsUI) {
+            this.eventsUI.updateEventHistory();
+        }
     }
 
     /**
@@ -385,7 +466,7 @@ class UIManager {
         this.elements.combatReports.innerHTML = '';
 
         // First, show active combats
-        const activeCombats = combatManager.getActiveCombats();
+        const activeCombats = this.combatManager.getActiveCombats();
         if (activeCombats.length > 0) {
             const activeCombatsSection = document.createElement('div');
             activeCombatsSection.className = 'active-combats-section';
@@ -534,6 +615,16 @@ class UIManager {
         // Update UI
         this.elements.research.currentResearch.textContent = `Researching: ${techConfig.name} (${Math.floor(progress)}%)`;
         this.elements.research.progressBar.style.width = `${progress}%`;
+    }
+
+    /**
+     * Show event modal
+     * @param {Object} event - The event to display
+     */
+    showEventModal(event) {
+        if (this.eventsUI) {
+            this.eventsUI.showEventModal(event);
+        }
     }
 
     /**

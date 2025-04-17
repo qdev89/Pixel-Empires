@@ -9,46 +9,75 @@
 <body>
     <div id="game-container">
         <header id="game-header">
-            <h1>Pixel Empires</h1>
-            <div id="resource-bar">
-                <div class="resource">
-                    <img src="assets/icons/food.png" alt="Food" class="resource-icon">
-                    <span id="food-count">0</span>
+            <div class="header-left">
+                <h1>Pixel Empires</h1>
+            </div>
+            <div class="header-center">
+                <div id="turn-info">
+                    <span id="turn-counter">Turn 1</span>
+                    <button id="next-turn-button">Next Turn</button>
                 </div>
-                <div class="resource">
-                    <img src="assets/icons/ore.png" alt="Ore" class="resource-icon">
-                    <span id="ore-count">0</span>
+            </div>
+            <div class="header-right">
+                <div id="resource-bar">
+                    <div class="resource">
+                        <img src="assets/icons/food.png" alt="Food" class="resource-icon">
+                        <span id="food-count">0</span>
+                    </div>
+                    <div class="resource">
+                        <img src="assets/icons/ore.png" alt="Ore" class="resource-icon">
+                        <span id="ore-count">0</span>
+                    </div>
+                </div>
+                <div id="game-controls">
+                    <button id="save-button" class="control-button">Save</button>
+                    <button id="load-button" class="control-button">Load</button>
+                    <button id="cheat-button" class="control-button cheat-button">Unlimited Resources</button>
                 </div>
             </div>
         </header>
 
         <main id="game-main">
-            <div id="game-map" class="game-section">
-                <!-- Map will be rendered here -->
+            <div id="map-container" class="game-section">
+                <div class="section-header">
+                    <h3>World Map</h3>
+                    <div class="map-controls">
+                        <button id="zoom-in" class="map-button">+</button>
+                        <button id="zoom-out" class="map-button">-</button>
+                        <button id="reset-zoom" class="map-button">Reset</button>
+                    </div>
+                </div>
+                <div id="game-map">
+                    <!-- Map will be rendered here -->
+                </div>
             </div>
 
             <div id="game-content">
-                <div id="left-column">
+                <div id="left-panel">
                     <div id="player-base" class="game-section">
-                        <h2>Your Empire</h2>
+                        <div class="section-header">
+                            <h3>Your Empire</h3>
+                        </div>
                         <div id="buildings-grid">
                             <!-- Buildings will be rendered here -->
                         </div>
                     </div>
 
                     <div id="unit-controls" class="game-section">
-                        <h3>Units</h3>
+                        <div class="section-header">
+                            <h3>Units</h3>
+                        </div>
                         <div id="unit-stats">
                             <div class="unit-stat">
-                                <img src="assets/icons/spearman.png" alt="Spearmen" class="unit-icon">
+                                <div class="unit-icon spearman">S</div>
                                 <span id="spearman-count">0</span>
                             </div>
                             <div class="unit-stat">
-                                <img src="assets/units/archer.png" alt="Archers" class="unit-icon">
+                                <div class="unit-icon archer">A</div>
                                 <span id="archer-count">0</span>
                             </div>
                             <div class="unit-stat">
-                                <img src="assets/units/cavalry.png" alt="Cavalry" class="unit-icon">
+                                <div class="unit-icon cavalry">C</div>
                                 <span id="cavalry-count">0</span>
                             </div>
                         </div>
@@ -58,7 +87,9 @@
                     </div>
 
                     <div id="combat-controls" class="game-section">
-                        <h3>Combat</h3>
+                        <div class="section-header">
+                            <h3>Combat</h3>
+                        </div>
                         <button id="attack-button" disabled>Attack</button>
                         <div id="combat-reports">
                             <!-- Combat reports will be displayed here -->
@@ -66,16 +97,20 @@
                     </div>
                 </div>
 
-                <div id="right-column">
+                <div id="right-panel">
                     <div id="building-controls" class="game-section">
-                        <h3>Buildings</h3>
+                        <div class="section-header">
+                            <h3>Buildings</h3>
+                        </div>
                         <div id="building-buttons">
                             <!-- Building buttons will be generated here -->
                         </div>
                     </div>
 
                     <div id="research-controls" class="game-section">
-                        <h3>Research</h3>
+                        <div class="section-header">
+                            <h3>Research</h3>
+                        </div>
                         <div id="research-status">
                             <div id="current-research">No research in progress</div>
                             <div id="research-progress-container" class="progress-container">
@@ -91,6 +126,15 @@
                             <!-- Research options will be generated here -->
                         </div>
                     </div>
+
+                    <div id="events-section" class="game-section">
+                        <div class="section-header">
+                            <h3>Recent Events</h3>
+                        </div>
+                        <div id="event-history">
+                            <!-- Event history will be displayed here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -98,6 +142,37 @@
         <footer id="game-footer">
             <p>Pixel Empires v0.3.1 - A Retro Strategy Game</p>
         </footer>
+
+        <!-- Event Modal -->
+        <div id="event-modal" class="modal">
+            <div id="event-modal-content" class="modal-content">
+                <span id="event-modal-close" class="close-button">&times;</span>
+                <!-- Event content will be dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Turn Summary Modal -->
+        <div id="turn-summary-modal" class="modal">
+            <div id="turn-summary-content" class="modal-content">
+                <span id="turn-summary-close" class="close-button">&times;</span>
+                <h3>Turn Summary</h3>
+                <div id="turn-summary-container">
+                    <!-- Turn summary will be dynamically generated -->
+                </div>
+                <button id="turn-summary-continue" class="continue-button">Continue</button>
+            </div>
+        </div>
+
+        <!-- Save/Load Modal -->
+        <div id="save-modal" class="modal">
+            <div id="save-modal-content" class="modal-content">
+                <span id="save-modal-close" class="close-button">&times;</span>
+                <h3>Save Game</h3>
+                <div id="save-slot-container">
+                    <!-- Save slots will be dynamically generated -->
+                </div>
+            </div>
+        </div>
 
         <!-- Combat Modal -->
         <div id="combat-modal" class="modal">
@@ -158,15 +233,20 @@
 
     <!-- Game scripts -->
     <script src="scripts/config.js"></script>
+    <script src="scripts/events.js"></script>
+    <script src="scripts/turn-summary.js"></script>
+    <script src="scripts/save-system.js"></script>
+    <script src="scripts/animations.js"></script>
+    <script src="scripts/unit-animations.js"></script>
     <script src="scripts/gameState.js"></script>
     <script src="scripts/buildings.js"></script>
     <script src="scripts/units.js"></script>
     <script src="scripts/combat.js"></script>
     <script src="scripts/research.js"></script>
-    <script src="scripts/animations.js"></script>
-    <script src="scripts/unit-animations.js"></script>
     <script src="scripts/ui.js"></script>
     <script src="scripts/combat-ui.js"></script>
+    <script src="scripts/events-ui.js"></script>
+    <script src="scripts/save-ui.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

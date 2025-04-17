@@ -3,11 +3,21 @@
  * Entry point for the game
  */
 
+// Initialize animation manager first (needed by other components)
+const animationManager = new AnimationManager();
+
+// Initialize game state and managers
+const gameState = new GameState();
+const buildingManager = new BuildingManager(gameState);
+const unitManager = new UnitManager(gameState);
+const combatManager = new CombatManager(gameState);
+const researchManager = new ResearchManager(gameState);
+
 // Initialize UI manager
 const uiManager = new UIManager(gameState, buildingManager, unitManager, combatManager, researchManager);
 
 // Initialize combat UI
-combatUI = new CombatUI(gameState, combatManager);
+const combatUI = new CombatUI(gameState, combatManager);
 
 // Game loop
 function gameLoop() {
@@ -19,6 +29,26 @@ function gameLoop() {
 
     // Schedule next frame
     requestAnimationFrame(gameLoop);
+}
+
+// Set up cheat button for unlimited resources
+const cheatButton = document.getElementById('cheat-button');
+if (cheatButton) {
+    cheatButton.addEventListener('click', () => {
+        // Set resources to a very high number
+        gameState.resources.FOOD = 9999999;
+        gameState.resources.ORE = 9999999;
+
+        // Increase storage capacity to hold the resources
+        gameState.storageCapacity.FOOD = 10000000;
+        gameState.storageCapacity.ORE = 10000000;
+
+        // Update UI
+        uiManager.updateUI();
+
+        // Show feedback
+        alert('Unlimited resources activated!');
+    });
 }
 
 // Start game loop

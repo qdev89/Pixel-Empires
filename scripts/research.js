@@ -7,32 +7,32 @@ class ResearchManager {
     constructor(gameState) {
         this.gameState = gameState;
     }
-    
+
     /**
      * Get technology data for a specific type and ID
      */
     getTechnologyData(category, techId) {
         return CONFIG.TECHNOLOGIES[category][techId];
     }
-    
+
     /**
      * Check if a technology can be researched
      */
     canResearch(category, techId) {
         const techConfig = CONFIG.TECHNOLOGIES[category][techId];
-        
+
         // Check if already researched
         if (this.gameState.technologies[category][techId]) {
             return false;
         }
-        
+
         // Check if we have enough resources
         const cost = techConfig.cost;
-        if (this.gameState.resources.FOOD < cost.FOOD || 
+        if (this.gameState.resources.FOOD < cost.FOOD ||
             this.gameState.resources.ORE < cost.ORE) {
             return false;
         }
-        
+
         // Check building requirements
         const requirements = techConfig.requirements;
         for (const [buildingType, requiredLevel] of Object.entries(requirements)) {
@@ -53,10 +53,10 @@ class ResearchManager {
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Start researching a technology
      */
@@ -64,13 +64,13 @@ class ResearchManager {
         if (!this.canResearch(category, techId)) {
             return false;
         }
-        
+
         const techConfig = CONFIG.TECHNOLOGIES[category][techId];
-        
+
         // Deduct resources
         this.gameState.resources.FOOD -= techConfig.cost.FOOD;
         this.gameState.resources.ORE -= techConfig.cost.ORE;
-        
+
         // Calculate research time based on Library level
         let researchTime = techConfig.researchTime;
         if (this.gameState.buildings.LIBRARY) {
@@ -78,20 +78,20 @@ class ResearchManager {
             const researchSpeed = CONFIG.BUILDINGS.LIBRARY.levels[libraryLevel - 1].researchSpeed;
             researchTime /= researchSpeed;
         }
-        
+
         // Add to research queue
         this.gameState.researchQueue.push({
             category: category,
             techId: techId,
             timeRemaining: researchTime
         });
-        
+
         // Trigger UI update
         this.gameState.onStateChange();
-        
+
         return true;
     }
-    
+
     /**
      * Process research queue (called from gameState.update)
      */
@@ -99,34 +99,34 @@ class ResearchManager {
         if (this.gameState.researchQueue.length === 0) {
             return;
         }
-        
+
         // Process the first item in the queue
         const currentResearch = this.gameState.researchQueue[0];
         currentResearch.timeRemaining -= deltaTime;
-        
+
         if (currentResearch.timeRemaining <= 0) {
             // Research complete
             this.completeResearch(currentResearch);
             this.gameState.researchQueue.shift();
-            
+
             // Trigger UI update
             this.gameState.onStateChange();
         }
     }
-    
+
     /**
      * Complete research and apply effects
      */
     completeResearch(research) {
         const { category, techId } = research;
-        
+
         // Mark as researched
         this.gameState.technologies[category][techId] = true;
-        
+
         // Apply technology effects
         this.applyTechnologyEffects();
     }
-    
+
     /**
      * Apply all researched technology effects
      */
@@ -142,14 +142,14 @@ class ResearchManager {
             advantageMultiplier: 0,
             defensiveCasualtyReduction: 0
         };
-        
+
         // Apply effects from all researched technologies
         for (const [category, techs] of Object.entries(this.gameState.technologies)) {
             for (const [techId, researched] of Object.entries(techs)) {
                 if (researched) {
                     const techConfig = CONFIG.TECHNOLOGIES[category][techId];
                     const effects = techConfig.effects;
-                    
+
                     // Apply each effect
                     if (effects.unitAttackBonus) {
                         this.gameState.bonuses.unitAttack += effects.unitAttackBonus;
@@ -179,33 +179,33 @@ class ResearchManager {
             }
         }
     }
-    
+
     /**
      * Get the current research queue
      */
     getResearchQueue() {
         return this.gameState.researchQueue;
     }
-    
+
     /**
      * Get all available technologies
      */
     getAvailableTechnologies() {
         const available = {};
-        
+
         for (const category of Object.keys(CONFIG.TECHNOLOGIES)) {
             available[category] = {};
-            
+
             for (const techId of Object.keys(CONFIG.TECHNOLOGIES[category])) {
                 if (this.canResearch(category, techId)) {
                     available[category][techId] = CONFIG.TECHNOLOGIES[category][techId];
                 }
             }
         }
-        
+
         return available;
     }
-    
+
     /**
      * Get all researched technologies
      */
@@ -214,5 +214,4 @@ class ResearchManager {
     }
 }
 
-// Create global research manager
-const researchManager = new ResearchManager(gameState);
+// ResearchManager class is now ready to be instantiated in main.js

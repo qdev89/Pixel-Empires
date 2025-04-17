@@ -18,6 +18,7 @@ class GameState {
         this.trainingQueue = [];
         this.researchQueue = [];
         this.combatReports = [];
+        this.turn = 1; // Game turn counter
 
         // Calculate initial storage capacity
         this.storageCapacity = {
@@ -39,6 +40,16 @@ class GameState {
 
         // Initialize map with NPC camps
         this.initializeMap();
+
+        // Initialize event manager
+        this.eventManager = new EventManager(this);
+
+        // Initialize turn summary manager
+        this.turnSummaryManager = new TurnSummaryManager(this);
+        this.turnSummaryManager.prepareSummary(); // Prepare for the first turn
+
+        // Initialize save system
+        this.saveSystem = new SaveSystem(this);
     }
 
     /**
@@ -101,6 +112,11 @@ class GameState {
 
         // Apply unit upkeep
         this.applyUnitUpkeep(deltaTime);
+
+        // Update event manager
+        if (this.eventManager) {
+            this.eventManager.update();
+        }
     }
 
     /**
@@ -473,6 +489,26 @@ class GameState {
     }
 
     /**
+     * Advance to the next turn
+     */
+    nextTurn() {
+        // Process turn summary before advancing the turn
+        if (this.turnSummaryManager) {
+            this.turnSummaryManager.processTurn();
+        }
+
+        this.turn++;
+
+        // Update event manager
+        if (this.eventManager) {
+            this.eventManager.update();
+        }
+
+        // Trigger UI update
+        this.onStateChange();
+    }
+
+    /**
      * Event handler for state changes
      */
     onStateChange() {
@@ -480,5 +516,4 @@ class GameState {
     }
 }
 
-// Create global game state
-const gameState = new GameState();
+// GameState class is now ready to be instantiated in main.js

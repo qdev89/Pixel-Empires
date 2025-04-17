@@ -254,5 +254,4 @@ class AnimationManager {
     }
 }
 
-// Create global animation manager
-const animationManager = new AnimationManager();
+// AnimationManager class is now ready to be instantiated in main.js

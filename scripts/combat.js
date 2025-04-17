@@ -289,5 +289,4 @@ class CombatManager {
     }
 }
 
-// Create global combat manager
-const combatManager = new CombatManager(gameState);
+// CombatManager class is now ready to be instantiated in main.js
