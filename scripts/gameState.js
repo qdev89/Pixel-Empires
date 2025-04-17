@@ -167,6 +167,11 @@ class GameState {
      * Calculate storage capacity based on warehouses and technology bonuses
      */
     calculateStorageCapacity() {
+        // Skip calculation if unlimited resources are active
+        if (this._unlimitedResourcesActive) {
+            return;
+        }
+
         let baseCapacity = 100; // Base capacity
 
         // Add capacity from warehouses
@@ -541,13 +546,16 @@ class GameState {
      * Set unlimited resources for testing
      */
     setUnlimitedResources() {
-        // Set all resources to 999999
-        this.resources.FOOD = 999999;
-        this.resources.ORE = 999999;
-
-        // Increase storage capacity to hold the resources
+        // First increase storage capacity to hold the resources
         this.storageCapacity.FOOD = 1000000;
         this.storageCapacity.ORE = 1000000;
+
+        // Create a flag to bypass normal storage capacity calculation
+        this._unlimitedResourcesActive = true;
+
+        // Then set all resources to 999999
+        this.resources.FOOD = 999999;
+        this.resources.ORE = 999999;
 
         // Log the action
         this.activityLogManager.addLogEntry('System', 'Unlimited resources activated for testing');
