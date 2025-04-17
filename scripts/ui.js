@@ -56,10 +56,7 @@ class UIManager {
         this.renderMap();
         this.updateUI();
 
-        // Start resource production animations after a delay
-        setTimeout(() => {
-            animationManager.startResourceProductionAnimations(this.gameState, this.elements);
-        }, 2000); // Start after 2 seconds to let the UI settle
+        // Resource production animations disabled as per user request
     }
 
     /**
@@ -198,15 +195,43 @@ class UIManager {
                 const cell = document.createElement('div');
                 cell.className = 'map-cell';
 
+                // Add terrain type based on position
+                // This creates a more interesting map with varied terrain
+                const terrainSeed = (x * 3 + y * 7) % 10; // Simple deterministic "random" value
+                if (terrainSeed < 5) {
+                    cell.classList.add('grass');
+                } else if (terrainSeed < 7) {
+                    cell.classList.add('forest');
+                } else if (terrainSeed < 9) {
+                    cell.classList.add('mountain');
+                } else {
+                    cell.classList.add('water');
+                }
+
                 const mapCell = this.gameState.map[y][x];
 
                 if (mapCell) {
                     if (mapCell.type === 'PLAYER') {
                         cell.style.backgroundColor = '#2a4';
-                        cell.textContent = 'P';
+
+                        // Add player base icon with unit animation
+                        const playerIcon = document.createElement('div');
+                        playerIcon.className = 'unit-display';
+                        playerIcon.dataset.unitType = 'spearman';
+                        cell.appendChild(playerIcon);
+                        cell.textContent = '';
+                        cell.title = 'Player Base';
                     } else if (mapCell.type === 'NPC') {
                         cell.style.backgroundColor = '#a42';
-                        cell.textContent = 'E';
+
+                        // Add enemy icon with unit animation
+                        const enemyType = mapCell.campType === 'GOBLIN_CAMP' ? 'goblin' : 'bandit';
+                        const enemyIcon = document.createElement('div');
+                        enemyIcon.className = 'unit-display';
+                        enemyIcon.dataset.unitType = enemyType;
+                        cell.appendChild(enemyIcon);
+                        cell.textContent = '';
+                        cell.title = `${CONFIG.NPC_CAMPS[mapCell.campType].name} (Difficulty: ${mapCell.difficulty || CONFIG.NPC_CAMPS[mapCell.campType].difficulty})`;
 
                         // Add click handler for attacking
                         cell.addEventListener('click', () => {
@@ -227,30 +252,9 @@ class UIManager {
      * Update the UI with current game state
      */
     updateUI() {
-        // Get previous values for animation
-        const prevFood = parseInt(this.elements.resources.food.textContent) || 0;
-        const prevOre = parseInt(this.elements.resources.ore.textContent) || 0;
-
-        // Get current values
-        const currentFood = Math.floor(this.gameState.resources.FOOD);
-        const currentOre = Math.floor(this.gameState.resources.ORE);
-
-        // Calculate differences for animation
-        const foodDiff = currentFood - prevFood;
-        const oreDiff = currentOre - prevOre;
-
-        // Create resource gain animations if significant change
-        if (foodDiff > 5) {
-            animationManager.createResourceGainAnimation('FOOD', foodDiff, this.elements.resources.food);
-        }
-
-        if (oreDiff > 5) {
-            animationManager.createResourceGainAnimation('ORE', oreDiff, this.elements.resources.ore);
-        }
-
-        // Update resource values
-        this.elements.resources.food.textContent = currentFood;
-        this.elements.resources.ore.textContent = currentOre;
+        // Update resource values directly without animations
+        this.elements.resources.food.textContent = Math.floor(this.gameState.resources.FOOD);
+        this.elements.resources.ore.textContent = Math.floor(this.gameState.resources.ORE);
 
         // Update buildings grid
         this.updateBuildingsGrid();
@@ -259,9 +263,9 @@ class UIManager {
         this.updateBuildingButtons();
 
         // Update unit stats
-        this.elements.unitStats.spearman.textContent = this.gameState.units.SPEARMAN;
-        this.elements.unitStats.archer.textContent = this.gameState.units.ARCHER;
-        this.elements.unitStats.cavalry.textContent = this.gameState.units.CAVALRY;
+        this.elements.unitStats.spearman.innerHTML = `<div class="unit-display" data-unit-type="spearman"></div> ${this.gameState.units.SPEARMAN}`;
+        this.elements.unitStats.archer.innerHTML = `<div class="unit-display" data-unit-type="archer"></div> ${this.gameState.units.ARCHER}`;
+        this.elements.unitStats.cavalry.innerHTML = `<div class="unit-display" data-unit-type="cavalry"></div> ${this.gameState.units.CAVALRY}`;
 
         // Update training controls
         this.updateTrainingControls();

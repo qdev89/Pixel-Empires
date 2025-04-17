@@ -120,10 +120,59 @@ class CombatManager {
         combat.status = 'fighting';
         this.gameState.onStateChange();
 
-        // Short delay for "fighting" visualization
+        // Create battle visualization
+        const battleContainer = document.createElement('div');
+        battleContainer.className = 'combat-visualization';
+        document.body.appendChild(battleContainer);
+
+        // Show battle visualization
         setTimeout(() => {
+            battleContainer.classList.add('active');
+
+            // Create battle scene
+            const battleScene = document.createElement('div');
+            battleScene.className = 'combat-scene';
+            battleContainer.appendChild(battleScene);
+
+            // Add background
+            const background = document.createElement('div');
+            background.className = 'combat-background';
+            battleScene.appendChild(background);
+
+            // Show battle animation
+            const enemyType = combat.target.campType === 'GOBLIN_CAMP' ? 'goblin' : 'bandit';
+            const enemyCount = Math.ceil(combat.target.difficulty);
+
+            unitAnimationManager.createBattleSceneAnimation(
+                combat.units,
+                enemyType,
+                enemyCount,
+                battleScene,
+                () => {
+                    // Animation complete, hide battle visualization
+                    battleContainer.classList.remove('active');
+                    setTimeout(() => {
+                        if (battleContainer.parentNode) {
+                            battleContainer.parentNode.removeChild(battleContainer);
+                        }
+                    }, 500);
+                },
+                true // Player wins by default, will be updated after combat resolution
+            );
+
             // Resolve the actual combat
             const report = this.gameState.resolveCombat(combat.target, combat.units);
+
+            // Update battle animation based on result
+            if (report.result === 'defeat') {
+                // Update animation to show player defeat
+                const battleAnimations = unitAnimationManager.activeAnimations;
+                for (const [animId, anim] of battleAnimations.entries()) {
+                    if (animId.startsWith('battle-scene') && anim.element.parentNode === battleScene) {
+                        anim.playerWins = false;
+                    }
+                }
+            }
 
             // Update combat status
             combat.status = 'returning';
@@ -142,7 +191,7 @@ class CombatManager {
                     }, CONFIG.COMBAT.CAMP_RESPAWN_TIME * 1000);
                 }
             }, combat.travelTime / 2);
-        }, 1000); // 1 second of "fighting"
+        }, 1000); // 1 second delay before battle visualization
     }
 
     /**
