@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Empires</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <header id="game-header">
+            <h1>Pixel Empires</h1>
+            <div id="resource-bar">
+                <div class="resource">
+                    <img src="assets/icons/food.png" alt="Food" class="resource-icon">
+                    <span id="food-count">0</span>
+                </div>
+                <div class="resource">
+                    <img src="assets/icons/ore.png" alt="Ore" class="resource-icon">
+                    <span id="ore-count">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main id="game-main">
+            <div id="game-map" class="game-section">
+                <!-- Map will be rendered here -->
+            </div>
+
+            <div id="game-content">
+                <div id="left-column">
+                    <div id="player-base" class="game-section">
+                        <h2>Your Empire</h2>
+                        <div id="buildings-grid">
+                            <!-- Buildings will be rendered here -->
+                        </div>
+                    </div>
+
+                    <div id="unit-controls" class="game-section">
+                        <h3>Units</h3>
+                        <div id="unit-stats">
+                            <div class="unit-stat">
+                                <img src="assets/icons/spearman.png" alt="Spearmen" class="unit-icon">
+                                <span id="spearman-count">0</span>
+                            </div>
+                            <div class="unit-stat">
+                                <img src="assets/units/archer.png" alt="Archers" class="unit-icon">
+                                <span id="archer-count">0</span>
+                            </div>
+                            <div class="unit-stat">
+                                <img src="assets/units/cavalry.png" alt="Cavalry" class="unit-icon">
+                                <span id="cavalry-count">0</span>
+                            </div>
+                        </div>
+                        <div id="training-controls">
+                            <!-- Training controls will be generated here -->
+                        </div>
+                    </div>
+
+                    <div id="combat-controls" class="game-section">
+                        <h3>Combat</h3>
+                        <button id="attack-button" disabled>Attack</button>
+                        <div id="combat-reports">
+                            <!-- Combat reports will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="right-column">
+                    <div id="building-controls" class="game-section">
+                        <h3>Buildings</h3>
+                        <div id="building-buttons">
+                            <!-- Building buttons will be generated here -->
+                        </div>
+                    </div>
+
+                    <div id="research-controls" class="game-section">
+                        <h3>Research</h3>
+                        <div id="research-status">
+                            <div id="current-research">No research in progress</div>
+                            <div id="research-progress-container" class="progress-container">
+                                <div id="research-progress-bar" class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div id="research-tabs">
+                            <button class="research-tab-button active" data-category="MILITARY">Military</button>
+                            <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
+                            <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
+                        </div>
+                        <div id="research-options">
+                            <!-- Research options will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer id="game-footer">
+            <p>Pixel Empires v0.3.1 - A Retro Strategy Game</p>
+        </footer>
+
+        <!-- Combat Modal -->
+        <div id="combat-modal" class="modal">
+            <div id="combat-modal-content" class="modal-content">
+                <span id="combat-modal-close" class="close-button">&times;</span>
+                <h3>Attack Enemy Camp</h3>
+
+                <div id="target-info" class="target-info">
+                    <!-- Target info will be populated here -->
+                </div>
+
+                <form id="unit-selection-form" class="unit-selection-form">
+                    <h4>Select Units</h4>
+
+                    <div class="unit-selection">
+                        <label for="spearman-input">Spearmen:</label>
+                        <div class="unit-input-group">
+                            <input type="number" id="spearman-input" min="0" value="0">
+                            <button type="button" id="spearman-max" class="max-button">Max (0)</button>
+                        </div>
+                    </div>
+
+                    <div class="unit-selection">
+                        <label for="archer-input">Archers:</label>
+                        <div class="unit-input-group">
+                            <input type="number" id="archer-input" min="0" value="0">
+                            <button type="button" id="archer-max" class="max-button">Max (0)</button>
+                        </div>
+                    </div>
+
+                    <div class="unit-selection">
+                        <label for="cavalry-input">Cavalry:</label>
+                        <div class="unit-input-group">
+                            <input type="number" id="cavalry-input" min="0" value="0">
+                            <button type="button" id="cavalry-max" class="max-button">Max (0)</button>
+                        </div>
+                    </div>
+
+                    <div class="battle-prediction">
+                        <h4>Battle Prediction</h4>
+                        <div class="prediction-row">
+                            <div>Your Attack Power: <span id="total-attack-power">0</span></div>
+                            <div>Enemy Defense: <span id="target-defense">0</span></div>
+                        </div>
+                        <div class="prediction-outcome">
+                            Outcome: <span id="battle-outcome">-</span>
+                        </div>
+                        <div id="advantage-info" class="advantage-info">
+                            <!-- Advantage info will be populated here -->
+                        </div>
+                    </div>
+
+                    <button type="button" id="modal-attack-button" class="attack-button" disabled>Attack!</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game scripts -->
+    <script src="scripts/config.js"></script>
+    <script src="scripts/gameState.js"></script>
+    <script src="scripts/buildings.js"></script>
+    <script src="scripts/units.js"></script>
+    <script src="scripts/combat.js"></script>
+    <script src="scripts/research.js"></script>
+    <script src="scripts/animations.js"></script>
+    <script src="scripts/ui.js"></script>
+    <script src="scripts/combat-ui.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+</html>
