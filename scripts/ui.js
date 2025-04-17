@@ -25,8 +25,12 @@ class UIManager {
         // Set up state change handler
         this.gameState.onStateChange = () => this.updateUI();
 
-        // Map zoom level
+        // Map state
         this.mapZoom = 1;
+        this.mapPosition = { x: 0, y: 0 };
+        this.isDragging = false;
+        this.dragStart = { x: 0, y: 0 };
+        this.mapSize = { width: 20, height: 20 }; // Expanded map size
 
         // DOM elements
         this.elements = {
@@ -54,7 +58,13 @@ class UIManager {
             mapControls: {
                 zoomIn: document.getElementById('zoom-in'),
                 zoomOut: document.getElementById('zoom-out'),
-                resetZoom: document.getElementById('reset-zoom')
+                resetZoom: document.getElementById('reset-zoom'),
+                centerMap: document.getElementById('center-map')
+            },
+            mapElements: {
+                wrapper: document.getElementById('map-wrapper'),
+                minimap: document.getElementById('minimap'),
+                minimapViewport: document.getElementById('minimap-viewport')
             },
             research: {
                 currentResearch: document.getElementById('current-research'),
@@ -93,14 +103,15 @@ class UIManager {
     }
 
     /**
-     * Initialize map controls for zooming
+     * Initialize map controls for zooming and panning
      */
     initializeMapControls() {
         // Set up zoom in button
         if (this.elements.mapControls.zoomIn) {
             this.elements.mapControls.zoomIn.addEventListener('click', () => {
-                this.mapZoom = Math.min(this.mapZoom + 0.2, 2.0);
-                this.updateMapZoom();
+                this.mapZoom = Math.min(this.mapZoom + 0.2, 3.0);
+                this.updateMapTransform();
+                this.updateMinimapViewport();
             });
         }
 
@@ -108,7 +119,8 @@ class UIManager {
         if (this.elements.mapControls.zoomOut) {
             this.elements.mapControls.zoomOut.addEventListener('click', () => {
                 this.mapZoom = Math.max(this.mapZoom - 0.2, 0.5);
-                this.updateMapZoom();
+                this.updateMapTransform();
+                this.updateMinimapViewport();
             });
         }
 
@@ -116,18 +128,189 @@ class UIManager {
         if (this.elements.mapControls.resetZoom) {
             this.elements.mapControls.resetZoom.addEventListener('click', () => {
                 this.mapZoom = 1.0;
-                this.updateMapZoom();
+                this.updateMapTransform();
+                this.updateMinimapViewport();
             });
+        }
+
+        // Set up center map button
+        if (this.elements.mapControls.centerMap) {
+            this.elements.mapControls.centerMap.addEventListener('click', () => {
+                this.mapPosition = { x: 0, y: 0 };
+                this.updateMapTransform();
+                this.updateMinimapViewport();
+            });
+        }
+
+        // Set up map dragging
+        const gameMap = this.elements.gameMap;
+        if (gameMap) {
+            // Mouse events
+            gameMap.addEventListener('mousedown', (e) => {
+                if (e.button === 0) { // Left mouse button
+                    this.isDragging = true;
+                    this.dragStart = { x: e.clientX, y: e.clientY };
+                    gameMap.classList.add('grabbing');
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (this.isDragging) {
+                    const dx = e.clientX - this.dragStart.x;
+                    const dy = e.clientY - this.dragStart.y;
+
+                    this.mapPosition.x += dx / this.mapZoom;
+                    this.mapPosition.y += dy / this.mapZoom;
+
+                    this.dragStart = { x: e.clientX, y: e.clientY };
+                    this.updateMapTransform();
+                    this.updateMinimapViewport();
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    gameMap.classList.remove('grabbing');
+                }
+            });
+
+            // Touch events for mobile
+            gameMap.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    this.isDragging = true;
+                    this.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    gameMap.classList.add('grabbing');
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (this.isDragging && e.touches.length === 1) {
+                    const dx = e.touches[0].clientX - this.dragStart.x;
+                    const dy = e.touches[0].clientY - this.dragStart.y;
+
+                    this.mapPosition.x += dx / this.mapZoom;
+                    this.mapPosition.y += dy / this.mapZoom;
+
+                    this.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    this.updateMapTransform();
+                    this.updateMinimapViewport();
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                if (this.isDragging) {
+                    this.isDragging = false;
+                    gameMap.classList.remove('grabbing');
+                }
+            });
+
+            // Mouse wheel zoom
+            gameMap.addEventListener('wheel', (e) => {
+                e.preventDefault();
+
+                // Get mouse position relative to map
+                const rect = gameMap.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                // Calculate position in map coordinates before zoom
+                const mapX = (mouseX - this.mapPosition.x) / this.mapZoom;
+                const mapY = (mouseY - this.mapPosition.y) / this.mapZoom;
+
+                // Adjust zoom level
+                if (e.deltaY < 0) {
+                    // Zoom in
+                    this.mapZoom = Math.min(this.mapZoom * 1.1, 3.0);
+                } else {
+                    // Zoom out
+                    this.mapZoom = Math.max(this.mapZoom * 0.9, 0.5);
+                }
+
+                // Calculate new position to keep mouse over same point
+                this.mapPosition.x = mouseX - mapX * this.mapZoom;
+                this.mapPosition.y = mouseY - mapY * this.mapZoom;
+
+                this.updateMapTransform();
+                this.updateMinimapViewport();
+            }, { passive: false });
+
+            // Set up minimap click to navigate
+            const minimap = this.elements.mapElements.minimap;
+            if (minimap) {
+                minimap.addEventListener('click', (e) => {
+                    const rect = minimap.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const clickY = e.clientY - rect.top;
+
+                    // Convert click position to map position
+                    const mapWidth = this.mapSize.width * 40; // Cell size is 40px
+                    const mapHeight = this.mapSize.height * 40;
+
+                    const minimapScale = Math.min(
+                        minimap.clientWidth / mapWidth,
+                        minimap.clientHeight / mapHeight
+                    );
+
+                    const mapCenterX = (clickX / minimapScale) - (this.elements.gameMap.clientWidth / 2 / this.mapZoom);
+                    const mapCenterY = (clickY / minimapScale) - (this.elements.gameMap.clientHeight / 2 / this.mapZoom);
+
+                    this.mapPosition.x = -mapCenterX * this.mapZoom;
+                    this.mapPosition.y = -mapCenterY * this.mapZoom;
+
+                    this.updateMapTransform();
+                    this.updateMinimapViewport();
+                });
+            }
         }
     }
 
     /**
-     * Update map zoom level
+     * Update map transform (position and zoom)
      */
-    updateMapZoom() {
+    updateMapTransform() {
         const mapGrid = this.elements.gameMap.querySelector('.map-grid');
         if (mapGrid) {
-            mapGrid.style.transform = `scale(${this.mapZoom})`;
+            mapGrid.style.transform = `translate(${this.mapPosition.x}px, ${this.mapPosition.y}px) scale(${this.mapZoom})`;
+        }
+    }
+
+    /**
+     * Update minimap viewport indicator
+     */
+    updateMinimapViewport() {
+        const minimapViewport = this.elements.mapElements.minimapViewport;
+        const minimap = this.elements.mapElements.minimap;
+        const gameMap = this.elements.gameMap;
+
+        if (minimapViewport && minimap && gameMap) {
+            // Calculate map dimensions
+            const mapWidth = this.mapSize.width * 40; // Cell size is 40px
+            const mapHeight = this.mapSize.height * 40;
+
+            // Calculate minimap scale
+            const minimapScale = Math.min(
+                minimap.clientWidth / mapWidth,
+                minimap.clientHeight / mapHeight
+            );
+
+            // Calculate visible area in map coordinates
+            const visibleWidth = gameMap.clientWidth / this.mapZoom;
+            const visibleHeight = gameMap.clientHeight / this.mapZoom;
+
+            // Calculate viewport position and size
+            const viewportX = (-this.mapPosition.x / this.mapZoom) * minimapScale;
+            const viewportY = (-this.mapPosition.y / this.mapZoom) * minimapScale;
+            const viewportWidth = visibleWidth * minimapScale;
+            const viewportHeight = visibleHeight * minimapScale;
+
+            // Update viewport element
+            minimapViewport.style.left = `${viewportX}px`;
+            minimapViewport.style.top = `${viewportY}px`;
+            minimapViewport.style.width = `${viewportWidth}px`;
+            minimapViewport.style.height = `${viewportHeight}px`;
         }
     }
 
@@ -257,15 +440,17 @@ class UIManager {
         const mapGrid = document.createElement('div');
         mapGrid.className = 'map-grid';
 
-        // Set explicit grid template based on map size
-        mapGrid.style.gridTemplateColumns = `repeat(${this.gameState.mapSize.width}, 32px)`;
-        mapGrid.style.gridTemplateRows = `repeat(${this.gameState.mapSize.height}, 32px)`;
+        // Set explicit grid template based on expanded map size
+        mapGrid.style.gridTemplateColumns = `repeat(${this.mapSize.width}, 40px)`;
+        mapGrid.style.gridTemplateRows = `repeat(${this.mapSize.height}, 40px)`;
 
-        // Render map cells
-        for (let y = 0; y < this.gameState.mapSize.height; y++) {
-            for (let x = 0; x < this.gameState.mapSize.width; x++) {
+        // Render map cells for the expanded map
+        for (let y = 0; y < this.mapSize.height; y++) {
+            for (let x = 0; x < this.mapSize.width; x++) {
                 const cell = document.createElement('div');
                 cell.className = 'map-cell';
+                cell.dataset.x = x;
+                cell.dataset.y = y;
 
                 // Add terrain type based on position
                 // This creates a more interesting map with varied terrain
@@ -280,44 +465,45 @@ class UIManager {
                     cell.classList.add('water');
                 }
 
-                const mapCell = this.gameState.map[y][x];
+                // Check if this cell is within the original game map bounds
+                if (x < this.gameState.mapSize.width && y < this.gameState.mapSize.height) {
+                    const mapCell = this.gameState.map[y][x];
 
-                if (mapCell) {
-                    if (mapCell.type === 'PLAYER') {
-                        cell.style.backgroundColor = '#2a4';
+                    if (mapCell) {
+                        if (mapCell.type === 'PLAYER') {
+                            // Add player base icon with unit animation
+                            const playerIcon = document.createElement('div');
+                            playerIcon.className = 'unit-display';
+                            playerIcon.dataset.unitType = 'spearman';
 
-                        // Add player base icon with unit animation
-                        const playerIcon = document.createElement('div');
-                        playerIcon.className = 'unit-display';
-                        playerIcon.dataset.unitType = 'spearman';
+                            // Add fallback text if needed
+                            playerIcon.textContent = 'P';
 
-                        // Add fallback text if needed
-                        playerIcon.textContent = 'P';
+                            cell.appendChild(playerIcon);
+                            cell.textContent = '';
+                            cell.title = 'Player Base';
+                            cell.classList.add('player-base');
+                        } else if (mapCell.type === 'NPC') {
+                            // Add enemy icon with unit animation
+                            const enemyType = mapCell.campType === 'GOBLIN_CAMP' ? 'goblin' : 'bandit';
+                            const enemyIcon = document.createElement('div');
+                            enemyIcon.className = 'unit-display';
+                            enemyIcon.dataset.unitType = enemyType;
 
-                        cell.appendChild(playerIcon);
-                        cell.textContent = '';
-                        cell.title = 'Player Base';
-                    } else if (mapCell.type === 'NPC') {
-                        cell.style.backgroundColor = '#a42';
+                            // Add fallback text if needed
+                            enemyIcon.textContent = enemyType === 'goblin' ? 'G' : 'B';
 
-                        // Add enemy icon with unit animation
-                        const enemyType = mapCell.campType === 'GOBLIN_CAMP' ? 'goblin' : 'bandit';
-                        const enemyIcon = document.createElement('div');
-                        enemyIcon.className = 'unit-display';
-                        enemyIcon.dataset.unitType = enemyType;
+                            cell.appendChild(enemyIcon);
+                            cell.textContent = '';
+                            cell.title = `${CONFIG.NPC_CAMPS[mapCell.campType].name} (Difficulty: ${mapCell.difficulty || CONFIG.NPC_CAMPS[mapCell.campType].difficulty})`;
+                            cell.classList.add('enemy-camp');
 
-                        // Add fallback text if needed
-                        enemyIcon.textContent = enemyType === 'goblin' ? 'G' : 'B';
-
-                        cell.appendChild(enemyIcon);
-                        cell.textContent = '';
-                        cell.title = `${CONFIG.NPC_CAMPS[mapCell.campType].name} (Difficulty: ${mapCell.difficulty || CONFIG.NPC_CAMPS[mapCell.campType].difficulty})`;
-
-                        // Add click handler for attacking
-                        cell.addEventListener('click', () => {
-                            this.combatManager.attackNPC(x, y);
-                        });
-                        cell.style.cursor = 'pointer';
+                            // Add click handler for attacking
+                            cell.addEventListener('click', () => {
+                                this.combatManager.attackNPC(x, y);
+                            });
+                            cell.style.cursor = 'pointer';
+                        }
                     }
                 }
 
@@ -327,8 +513,91 @@ class UIManager {
 
         mapElement.appendChild(mapGrid);
 
-        // Apply current zoom level
-        this.updateMapZoom();
+        // Render minimap
+        this.renderMinimap();
+
+        // Apply current transform
+        this.updateMapTransform();
+        this.updateMinimapViewport();
+    }
+
+    /**
+     * Render the minimap
+     */
+    renderMinimap() {
+        const minimap = this.elements.mapElements.minimap;
+        if (!minimap) return;
+
+        minimap.innerHTML = '';
+
+        // Calculate minimap scale
+        const mapWidth = this.mapSize.width * 40; // Cell size is 40px
+        const mapHeight = this.mapSize.height * 40;
+
+        const minimapScale = Math.min(
+            minimap.clientWidth / mapWidth,
+            minimap.clientHeight / mapHeight
+        );
+
+        // Create minimap canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = minimap.clientWidth;
+        canvas.height = minimap.clientHeight;
+        minimap.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        // Draw terrain
+        for (let y = 0; y < this.mapSize.height; y++) {
+            for (let x = 0; x < this.mapSize.width; x++) {
+                const terrainSeed = (x * 3 + y * 7) % 10;
+
+                // Set color based on terrain type
+                if (terrainSeed < 5) {
+                    ctx.fillStyle = '#2a6e2a'; // grass
+                } else if (terrainSeed < 7) {
+                    ctx.fillStyle = '#0e4e0e'; // forest
+                } else if (terrainSeed < 9) {
+                    ctx.fillStyle = '#6e4e2a'; // mountain
+                } else {
+                    ctx.fillStyle = '#2a4e6e'; // water
+                }
+
+                // Draw cell
+                ctx.fillRect(
+                    x * 40 * minimapScale,
+                    y * 40 * minimapScale,
+                    40 * minimapScale,
+                    40 * minimapScale
+                );
+            }
+        }
+
+        // Draw player base and enemy camps
+        for (let y = 0; y < this.gameState.mapSize.height; y++) {
+            for (let x = 0; x < this.gameState.mapSize.width; x++) {
+                const mapCell = this.gameState.map[y][x];
+
+                if (mapCell) {
+                    if (mapCell.type === 'PLAYER') {
+                        ctx.fillStyle = '#4f4'; // bright green for player
+                    } else if (mapCell.type === 'NPC') {
+                        ctx.fillStyle = '#f44'; // bright red for enemies
+                    } else {
+                        continue;
+                    }
+
+                    // Draw marker
+                    const markerSize = 6 * minimapScale;
+                    ctx.fillRect(
+                        (x * 40 + 20 - markerSize/2) * minimapScale,
+                        (y * 40 + 20 - markerSize/2) * minimapScale,
+                        markerSize,
+                        markerSize
+                    );
+                }
+            }
+        }
     }
 
     /**

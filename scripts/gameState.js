@@ -69,7 +69,9 @@ class GameState {
         // Place NPC camps
         this.placeNPCCamp(3, 3, 'GOBLIN_CAMP');
         this.placeNPCCamp(6, 2, 'BANDIT_HIDEOUT');
-        this.placeNPCCamp(2, 7, 'GOBLIN_CAMP');
+        this.placeNPCCamp(2, 7, 'WOLF_DEN');
+        this.placeNPCCamp(8, 5, 'TROLL_CAVE');
+        this.placeNPCCamp(5, 8, 'GOBLIN_CAMP');
     }
 
     /**
@@ -385,28 +387,85 @@ class GameState {
     /**
      * Resolve combat with an NPC camp
      */
-    resolveCombat(target, attackingUnits) {
+    resolveCombat(target, attackingUnits, formation = 'balanced') {
         // Get camp configuration (either from target or from CONFIG)
         const campConfig = target.difficulty ?
-            { name: CONFIG.NPC_CAMPS[target.campType].name, difficulty: target.difficulty, loot: target.loot } :
+            {
+                name: CONFIG.NPC_CAMPS[target.campType].name,
+                difficulty: target.difficulty,
+                loot: target.loot,
+                specialAbility: CONFIG.NPC_CAMPS[target.campType].specialAbility,
+                weakAgainst: CONFIG.NPC_CAMPS[target.campType].weakAgainst,
+                strongAgainst: CONFIG.NPC_CAMPS[target.campType].strongAgainst
+            } :
             CONFIG.NPC_CAMPS[target.campType];
 
-        // Use the combat manager to calculate attack power
-        const playerAttack = combatManager.calculateAttackPower(attackingUnits, target);
-        const npcDefense = campConfig.difficulty * 10;
+        // Determine terrain type at target location
+        const terrainSeed = (target.x * 3 + target.y * 7) % 10;
+        let terrainType = 'grass';
+        if (terrainSeed < 5) {
+            terrainType = 'grass';
+        } else if (terrainSeed < 7) {
+            terrainType = 'forest';
+        } else if (terrainSeed < 9) {
+            terrainType = 'mountain';
+        } else {
+            terrainType = 'water';
+        }
+
+        // Get terrain effects
+        const terrainEffect = CONFIG.COMBAT.TERRAIN_EFFECTS[terrainType];
+
+        // Get formation effects
+        const formationEffect = CONFIG.COMBAT.FORMATIONS[formation];
+
+        // Use the combat manager to calculate base attack power
+        let playerAttack = combatManager.calculateAttackPower(attackingUnits, target);
+        let npcDefense = campConfig.difficulty * 10;
+
+        // Apply terrain effects
+        playerAttack *= terrainEffect.attack;
+        npcDefense *= terrainEffect.defense;
+
+        // Apply formation effects
+        playerAttack *= formationEffect.attack;
+        npcDefense *= formationEffect.defense;
+
+        // Apply enemy special ability if it affects attack
+        if (campConfig.specialAbility && campConfig.specialAbility.effect.attackReduction) {
+            playerAttack *= (1 - campConfig.specialAbility.effect.attackReduction);
+        }
+
+        // Apply enemy special ability if it affects defense
+        if (campConfig.specialAbility && campConfig.specialAbility.effect.defenseReduction) {
+            npcDefense *= (1 - campConfig.specialAbility.effect.defenseReduction);
+        }
 
         // Create detailed unit advantages information
         const unitAdvantages = {};
-        if (attackingUnits.SPEARMAN > 0 && target.campType === 'GOBLIN_CAMP') {
-            let advantageMultiplier = 1.2;
-            if (this.bonuses.advantageMultiplier > 0) {
-                advantageMultiplier += this.bonuses.advantageMultiplier;
+
+        // Check for unit type advantages based on camp weaknesses
+        for (const [unitType, count] of Object.entries(attackingUnits)) {
+            if (count > 0) {
+                if (unitType === campConfig.weakAgainst) {
+                    let advantageMultiplier = CONFIG.COMBAT.ADVANTAGE_MULTIPLIER;
+                    if (this.bonuses.advantageMultiplier > 0) {
+                        advantageMultiplier += this.bonuses.advantageMultiplier;
+                    }
+                    unitAdvantages[unitType] = {
+                        target: campConfig.name,
+                        multiplier: advantageMultiplier,
+                        description: `${CONFIG.UNITS[unitType].name} +${Math.round((advantageMultiplier - 1) * 100)}% vs ${campConfig.name}`
+                    };
+                } else if (unitType === campConfig.strongAgainst) {
+                    let disadvantageMultiplier = CONFIG.COMBAT.DISADVANTAGE_MULTIPLIER;
+                    unitAdvantages[unitType] = {
+                        target: campConfig.name,
+                        multiplier: disadvantageMultiplier,
+                        description: `${CONFIG.UNITS[unitType].name} ${Math.round((disadvantageMultiplier - 1) * 100)}% vs ${campConfig.name}`
+                    };
+                }
             }
-            unitAdvantages.SPEARMAN = {
-                target: 'GOBLIN',
-                multiplier: advantageMultiplier,
-                description: `Spearmen +${Math.round((advantageMultiplier - 1) * 100)}% vs Goblins`
-            };
         }
         if (attackingUnits.ARCHER > 0 && target.campType === 'BANDIT_HIDEOUT') {
             let advantageMultiplier = 1.2;
@@ -434,6 +493,22 @@ class GameState {
                 playerAttack: playerAttack,
                 npcDefense: npcDefense,
                 unitAdvantages: unitAdvantages,
+                terrain: {
+                    type: terrainType,
+                    effect: terrainEffect,
+                    description: terrainEffect.description
+                },
+                formation: {
+                    type: formation,
+                    effect: formationEffect,
+                    name: formationEffect.name,
+                    description: formationEffect.description
+                },
+                enemyAbility: campConfig.specialAbility ? {
+                    name: campConfig.specialAbility.name,
+                    description: campConfig.specialAbility.description,
+                    effect: campConfig.specialAbility.effect
+                } : null,
                 techBonuses: {
                     attackBonus: this.bonuses.unitAttack > 0 ? `+${Math.round(this.bonuses.unitAttack * 100)}%` : null,
                     defenseBonus: this.bonuses.unitDefense > 0 ? `+${Math.round(this.bonuses.unitDefense * 100)}%` : null,
@@ -447,11 +522,47 @@ class GameState {
             // Player wins
             report.result = 'victory';
 
-            // Calculate casualties based on unit type advantages
-            // Units with advantages against the enemy type have lower casualties
-            let spearmanCasualtyRate = target.campType === 'GOBLIN_CAMP' ? 0.2 : 0.25;
-            let archerCasualtyRate = target.campType === 'BANDIT_HIDEOUT' ? 0.2 : 0.25;
+            // Calculate base casualty rates based on unit type advantages
+            let spearmanCasualtyRate = 0.25;
+            let archerCasualtyRate = 0.25;
             let cavalryCasualtyRate = 0.25;
+
+            // Apply unit type advantage/disadvantage effects on casualties
+            for (const [unitType, advantage] of Object.entries(unitAdvantages)) {
+                if (unitType === 'SPEARMAN') {
+                    if (advantage.multiplier > 1) {
+                        // Advantage means fewer casualties
+                        spearmanCasualtyRate = 0.2;
+                    } else if (advantage.multiplier < 1) {
+                        // Disadvantage means more casualties
+                        spearmanCasualtyRate = 0.3;
+                    }
+                } else if (unitType === 'ARCHER') {
+                    if (advantage.multiplier > 1) {
+                        archerCasualtyRate = 0.2;
+                    } else if (advantage.multiplier < 1) {
+                        archerCasualtyRate = 0.3;
+                    }
+                } else if (unitType === 'CAVALRY') {
+                    if (advantage.multiplier > 1) {
+                        cavalryCasualtyRate = 0.2;
+                    } else if (advantage.multiplier < 1) {
+                        cavalryCasualtyRate = 0.3;
+                    }
+                }
+            }
+
+            // Apply formation effect on casualty rate
+            spearmanCasualtyRate *= formationEffect.casualtyRate;
+            archerCasualtyRate *= formationEffect.casualtyRate;
+            cavalryCasualtyRate *= formationEffect.casualtyRate;
+
+            // Apply enemy special ability if it affects casualties
+            if (campConfig.specialAbility && campConfig.specialAbility.effect.casualtyIncrease) {
+                spearmanCasualtyRate *= (1 + campConfig.specialAbility.effect.casualtyIncrease);
+                archerCasualtyRate *= (1 + campConfig.specialAbility.effect.casualtyIncrease);
+                cavalryCasualtyRate *= (1 + campConfig.specialAbility.effect.casualtyIncrease);
+            }
 
             // Apply defensive technology bonus if applicable
             if (this.bonuses.defensiveCasualtyReduction > 0) {
@@ -469,8 +580,14 @@ class GameState {
             const survivingArchers = attackingUnits.ARCHER - report.unitsLost.ARCHER;
             const survivingCavalry = attackingUnits.CAVALRY - report.unitsLost.CAVALRY;
 
-            // Add loot
+            // Calculate base loot
             report.loot = { ...campConfig.loot };
+
+            // Apply enemy special ability if it affects loot
+            if (campConfig.specialAbility && campConfig.specialAbility.effect.lootReduction) {
+                report.loot.FOOD = Math.floor(report.loot.FOOD * (1 - campConfig.specialAbility.effect.lootReduction));
+                report.loot.ORE = Math.floor(report.loot.ORE * (1 - campConfig.specialAbility.effect.lootReduction));
+            }
 
             // Add resources and units back to player
             this.resources.FOOD = Math.min(

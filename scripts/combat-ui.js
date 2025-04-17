@@ -27,6 +27,17 @@ class CombatUI {
                 archer: document.getElementById('archer-max'),
                 cavalry: document.getElementById('cavalry-max')
             },
+            formationRadios: {
+                balanced: document.getElementById('formation-balanced'),
+                aggressive: document.getElementById('formation-aggressive'),
+                defensive: document.getElementById('formation-defensive'),
+                flanking: document.getElementById('formation-flanking')
+            },
+            terrainInfo: {
+                type: document.getElementById('terrain-type'),
+                effect: document.getElementById('terrain-effect')
+            },
+            enemyAbility: document.getElementById('enemy-ability'),
             totalAttackPower: document.getElementById('total-attack-power'),
             targetDefense: document.getElementById('target-defense'),
             battleOutcome: document.getElementById('battle-outcome'),
@@ -69,6 +80,13 @@ class CombatUI {
             });
         }
 
+        // Handle formation radio changes
+        for (const [formationType, radio] of Object.entries(this.elements.formationRadios)) {
+            radio.addEventListener('change', () => {
+                this.updateAttackPowerCalculation();
+            });
+        }
+
         // Handle attack button
         this.elements.attackButton.addEventListener('click', () => {
             this.launchAttack();
@@ -93,12 +111,45 @@ class CombatUI {
             config: CONFIG.NPC_CAMPS[target.campType]
         };
 
+        // Determine terrain type at target location
+        const terrainSeed = (targetX * 3 + targetY * 7) % 10;
+        let terrainType = 'grass';
+        if (terrainSeed < 5) {
+            terrainType = 'grass';
+        } else if (terrainSeed < 7) {
+            terrainType = 'forest';
+        } else if (terrainSeed < 9) {
+            terrainType = 'mountain';
+        } else {
+            terrainType = 'water';
+        }
+
+        // Get terrain effects
+        const terrainEffect = CONFIG.COMBAT.TERRAIN_EFFECTS[terrainType];
+
+        // Update terrain info
+        this.elements.terrainInfo.type.textContent = terrainType.charAt(0).toUpperCase() + terrainType.slice(1);
+        this.elements.terrainInfo.effect.textContent = terrainEffect.description;
+
+        // Update enemy ability info
+        if (this.targetCamp.config.specialAbility) {
+            const ability = this.targetCamp.config.specialAbility;
+            this.elements.enemyAbility.innerHTML = `
+                <div class="ability-name">${ability.name}</div>
+                <div class="ability-description">${ability.description}</div>
+            `;
+        } else {
+            this.elements.enemyAbility.textContent = 'None';
+        }
+
         // Update target info
         this.elements.targetInfo.innerHTML = `
             <h3>${this.targetCamp.config.name}</h3>
             <div>Difficulty: ${this.targetCamp.config.difficulty}</div>
             <div>Defense: ${this.targetCamp.config.difficulty * 10}</div>
             <div>Potential Loot: Food ${this.targetCamp.config.loot.FOOD}, Ore ${this.targetCamp.config.loot.ORE}</div>
+            <div>Weak Against: ${CONFIG.UNITS[this.targetCamp.config.weakAgainst].name}</div>
+            <div>Strong Against: ${CONFIG.UNITS[this.targetCamp.config.strongAgainst].name}</div>
         `;
 
         // Reset unit inputs
@@ -146,6 +197,18 @@ class CombatUI {
         const archerCount = parseInt(this.elements.unitInputs.archer.value) || 0;
         const cavalryCount = parseInt(this.elements.unitInputs.cavalry.value) || 0;
 
+        // Get selected formation
+        let selectedFormation = 'balanced';
+        for (const [formationType, radio] of Object.entries(this.elements.formationRadios)) {
+            if (radio.checked) {
+                selectedFormation = formationType;
+                break;
+            }
+        }
+
+        // Get formation effects
+        const formationEffect = CONFIG.COMBAT.FORMATIONS[selectedFormation];
+
         // Calculate Spearmen attack power
         if (spearmenCount > 0) {
             let unitBaseAttack = CONFIG.UNITS.SPEARMAN.stats.attack;
@@ -155,14 +218,18 @@ class CombatUI {
 
             let unitAttack = spearmenCount * unitBaseAttack;
 
-            // Apply unit type advantages
-            if (this.targetCamp.campType === 'GOBLIN_CAMP') {
-                let advantageMultiplier = 1.2; // 20% base bonus against goblins
+            // Apply unit type advantages based on camp weaknesses
+            if (this.targetCamp.config.weakAgainst === 'SPEARMAN') {
+                let advantageMultiplier = CONFIG.COMBAT.ADVANTAGE_MULTIPLIER;
                 if (this.gameState.bonuses.advantageMultiplier > 0) {
                     advantageMultiplier += this.gameState.bonuses.advantageMultiplier;
                 }
                 unitAttack *= advantageMultiplier;
-                advantageText += `<div class="advantage">Spearmen +${Math.round((advantageMultiplier - 1) * 100)}% vs Goblins</div>`;
+                advantageText += `<div class="advantage">Spearmen +${Math.round((advantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
+            } else if (this.targetCamp.config.strongAgainst === 'SPEARMAN') {
+                let disadvantageMultiplier = CONFIG.COMBAT.DISADVANTAGE_MULTIPLIER;
+                unitAttack *= disadvantageMultiplier;
+                advantageText += `<div class="disadvantage">Spearmen ${Math.round((disadvantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
             }
 
             totalAttackPower += unitAttack;
@@ -177,14 +244,18 @@ class CombatUI {
 
             let unitAttack = archerCount * unitBaseAttack;
 
-            // Apply unit type advantages
-            if (this.targetCamp.campType === 'BANDIT_HIDEOUT') {
-                let advantageMultiplier = 1.2; // 20% base bonus against bandits
+            // Apply unit type advantages based on camp weaknesses
+            if (this.targetCamp.config.weakAgainst === 'ARCHER') {
+                let advantageMultiplier = CONFIG.COMBAT.ADVANTAGE_MULTIPLIER;
                 if (this.gameState.bonuses.advantageMultiplier > 0) {
                     advantageMultiplier += this.gameState.bonuses.advantageMultiplier;
                 }
                 unitAttack *= advantageMultiplier;
-                advantageText += `<div class="advantage">Archers +${Math.round((advantageMultiplier - 1) * 100)}% vs Bandits</div>`;
+                advantageText += `<div class="advantage">Archers +${Math.round((advantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
+            } else if (this.targetCamp.config.strongAgainst === 'ARCHER') {
+                let disadvantageMultiplier = CONFIG.COMBAT.DISADVANTAGE_MULTIPLIER;
+                unitAttack *= disadvantageMultiplier;
+                advantageText += `<div class="disadvantage">Archers ${Math.round((disadvantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
             }
 
             totalAttackPower += unitAttack;
@@ -198,16 +269,71 @@ class CombatUI {
             }
 
             let unitAttack = cavalryCount * unitBaseAttack;
+
+            // Apply unit type advantages based on camp weaknesses
+            if (this.targetCamp.config.weakAgainst === 'CAVALRY') {
+                let advantageMultiplier = CONFIG.COMBAT.ADVANTAGE_MULTIPLIER;
+                if (this.gameState.bonuses.advantageMultiplier > 0) {
+                    advantageMultiplier += this.gameState.bonuses.advantageMultiplier;
+                }
+                unitAttack *= advantageMultiplier;
+                advantageText += `<div class="advantage">Cavalry +${Math.round((advantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
+            } else if (this.targetCamp.config.strongAgainst === 'CAVALRY') {
+                let disadvantageMultiplier = CONFIG.COMBAT.DISADVANTAGE_MULTIPLIER;
+                unitAttack *= disadvantageMultiplier;
+                advantageText += `<div class="disadvantage">Cavalry ${Math.round((disadvantageMultiplier - 1) * 100)}% vs ${this.targetCamp.config.name}</div>`;
+            }
+
             totalAttackPower += unitAttack;
+        }
+
+        // Determine terrain type at target location
+        const terrainSeed = (this.targetCamp.x * 3 + this.targetCamp.y * 7) % 10;
+        let terrainType = 'grass';
+        if (terrainSeed < 5) {
+            terrainType = 'grass';
+        } else if (terrainSeed < 7) {
+            terrainType = 'forest';
+        } else if (terrainSeed < 9) {
+            terrainType = 'mountain';
+        } else {
+            terrainType = 'water';
+        }
+
+        // Get terrain effects
+        const terrainEffect = CONFIG.COMBAT.TERRAIN_EFFECTS[terrainType];
+
+        // Apply terrain effects
+        totalAttackPower *= terrainEffect.attack;
+
+        // Apply formation effects
+        totalAttackPower *= formationEffect.attack;
+
+        // Apply enemy special ability if it affects attack
+        if (this.targetCamp.config.specialAbility && this.targetCamp.config.specialAbility.effect.attackReduction) {
+            totalAttackPower *= (1 - this.targetCamp.config.specialAbility.effect.attackReduction);
+        }
+
+        // Calculate target defense with modifiers
+        let targetDefense = this.targetCamp.config.difficulty * 10;
+
+        // Apply terrain effects to defense
+        targetDefense *= terrainEffect.defense;
+
+        // Apply formation effects to defense
+        targetDefense /= formationEffect.defense; // Divide by defense modifier since it affects enemy defense from our perspective
+
+        // Apply enemy special ability if it affects defense
+        if (this.targetCamp.config.specialAbility && this.targetCamp.config.specialAbility.effect.defenseReduction) {
+            targetDefense *= (1 - this.targetCamp.config.specialAbility.effect.defenseReduction);
         }
 
         // Update UI
         this.elements.totalAttackPower.textContent = totalAttackPower.toFixed(1);
-        this.elements.targetDefense.textContent = (this.targetCamp.config.difficulty * 10).toString();
+        this.elements.targetDefense.textContent = targetDefense.toFixed(1);
         this.elements.advantageInfo.innerHTML = advantageText;
 
         // Predict battle outcome
-        const targetDefense = this.targetCamp.config.difficulty * 10;
         if (totalAttackPower > targetDefense) {
             this.elements.battleOutcome.textContent = 'Victory Likely';
             this.elements.battleOutcome.className = 'victory';
@@ -239,8 +365,17 @@ class CombatUI {
             return;
         }
 
-        // Launch the attack
-        this.combatManager.attackNPCWithUnits(this.targetCamp.x, this.targetCamp.y, units);
+        // Get selected formation
+        let selectedFormation = 'balanced';
+        for (const [formationType, radio] of Object.entries(this.elements.formationRadios)) {
+            if (radio.checked) {
+                selectedFormation = formationType;
+                break;
+            }
+        }
+
+        // Launch the attack with formation
+        this.combatManager.attackNPCWithUnits(this.targetCamp.x, this.targetCamp.y, units, selectedFormation);
 
         // Hide the modal
         this.hideModal();

@@ -45,10 +45,17 @@
                         <button id="zoom-in" class="map-button">+</button>
                         <button id="zoom-out" class="map-button">-</button>
                         <button id="reset-zoom" class="map-button">Reset</button>
+                        <button id="center-map" class="map-button">Center</button>
                     </div>
                 </div>
-                <div id="game-map">
-                    <!-- Map will be rendered here -->
+                <div id="map-wrapper">
+                    <div id="game-map">
+                        <!-- Map will be rendered here -->
+                    </div>
+                    <div id="minimap-container">
+                        <div id="minimap"></div>
+                        <div id="minimap-viewport"></div>
+                    </div>
                 </div>
             </div>
 
@@ -213,6 +220,43 @@
                             <input type="number" id="cavalry-input" min="0" value="0">
                             <button type="button" id="cavalry-max" class="max-button">Max (0)</button>
                         </div>
+                    </div>
+
+                    <div class="formation-selection">
+                        <h4>Select Formation</h4>
+                        <div class="formation-options">
+                            <div class="formation-option">
+                                <input type="radio" id="formation-balanced" name="formation" value="balanced" checked>
+                                <label for="formation-balanced">Balanced</label>
+                                <div class="formation-description">Equal distribution of attack and defense</div>
+                            </div>
+                            <div class="formation-option">
+                                <input type="radio" id="formation-aggressive" name="formation" value="aggressive">
+                                <label for="formation-aggressive">Aggressive</label>
+                                <div class="formation-description">+30% attack, -30% defense, +20% casualties</div>
+                            </div>
+                            <div class="formation-option">
+                                <input type="radio" id="formation-defensive" name="formation" value="defensive">
+                                <label for="formation-defensive">Defensive</label>
+                                <div class="formation-description">-30% attack, +30% defense, -20% casualties</div>
+                            </div>
+                            <div class="formation-option">
+                                <input type="radio" id="formation-flanking" name="formation" value="flanking">
+                                <label for="formation-flanking">Flanking</label>
+                                <div class="formation-description">+20% attack, -10% defense, -10% casualties</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="terrain-info">
+                        <h4>Terrain</h4>
+                        <div id="terrain-type">Unknown</div>
+                        <div id="terrain-effect">No effect</div>
+                    </div>
+
+                    <div class="enemy-ability-info">
+                        <h4>Enemy Special Ability</h4>
+                        <div id="enemy-ability">None</div>
                     </div>
 
                     <div class="battle-prediction">

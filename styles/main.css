@@ -302,6 +302,15 @@ div.resource-icon {
     margin-bottom: 15px;
 }
 
+#map-wrapper {
+    position: relative;
+    height: 350px;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
 .map-controls {
     display: flex;
     gap: 8px;
@@ -327,34 +336,40 @@ div.resource-icon {
 }
 
 #game-map {
-    height: 280px;
-    overflow: auto;
-    position: relative;
-    padding: 10px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: transform 0.3s ease;
+    transition: transform 0.1s ease;
     background-color: var(--bg-color);
     border-radius: 4px;
 }
 
+#game-map.grabbing {
+    cursor: grabbing;
+}
+
 .map-grid {
     display: grid;
-    grid-template-columns: repeat(10, 30px);
-    grid-template-rows: repeat(10, 30px);
+    grid-template-columns: repeat(20, 40px);
+    grid-template-rows: repeat(20, 40px);
     gap: 2px;
     background-color: var(--bg-color);
     padding: 8px;
     border: 1px solid var(--border-color);
     transform-origin: center;
-    transition: transform 0.3s ease;
+    transition: transform 0.1s ease;
     border-radius: 4px;
+    position: absolute;
 }
 
 .map-cell {
-    width: 30px !important;
-    height: 30px !important;
+    width: 40px !important;
+    height: 40px !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -365,6 +380,7 @@ div.resource-icon {
     cursor: default;
     border-radius: 2px;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .map-cell:hover {
@@ -373,21 +389,101 @@ div.resource-icon {
     z-index: 10;
 }
 
-/* Terrain types */
+/* Terrain types with improved visuals */
 .map-cell.grass {
     background-color: #2a6e2a;
+    background-image: linear-gradient(to bottom right, #2a6e2a, #1d5e1d);
 }
 
 .map-cell.forest {
     background-color: #0e4e0e;
+    background-image: linear-gradient(to bottom right, #0e4e0e, #0a3a0a);
 }
 
 .map-cell.mountain {
     background-color: #6e4e2a;
+    background-image: linear-gradient(to bottom right, #6e4e2a, #5a3e20);
 }
 
 .map-cell.water {
     background-color: #2a4e6e;
+    background-image: linear-gradient(to bottom right, #2a4e6e, #1a3e5e);
+}
+
+/* Terrain decorations */
+.map-cell.grass::after {
+    content: '';
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%233a8e3a" d="M12,2L4.5,20.29L5.21,21L18.79,21L19.5,20.29L12,2Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+}
+
+.map-cell.forest::after {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%231a5e1a" d="M12,3L2,21H22L12,3Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.3;
+}
+
+.map-cell.mountain::after {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%237e5e3a" d="M14,6L10.25,11L13.1,14.8L11.5,16L7,12L3,16L2,14.8L7,10.5L11.33,14L14,11L14.43,10.26L17,7L22,12L21,14L17,10L14,6Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.3;
+}
+
+.map-cell.water::after {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%233a5e8e" d="M12,20A6,6 0 0,1 6,14C6,10 12,3.25 12,3.25C12,3.25 18,10 18,14A6,6 0 0,1 12,20Z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+}
+
+/* Minimap styles */
+#minimap-container {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 120px;
+    height: 120px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 100;
+}
+
+#minimap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#minimap-viewport {
+    position: absolute;
+    border: 1px solid var(--highlight-color);
+    background-color: rgba(255, 204, 0, 0.1);
+    pointer-events: none;
 }
 
 /* Player base */
@@ -1397,6 +1493,76 @@ div.resource-icon {
 
 .advantage-info {
     font-size: 8px;
+}
+
+/* Formation selection styles */
+.formation-selection {
+    margin-bottom: 15px;
+}
+
+.formation-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.formation-option {
+    background-color: #333;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.formation-option:hover {
+    background-color: #444;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.formation-option input[type="radio"] {
+    margin-right: 8px;
+}
+
+.formation-option label {
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 8px;
+}
+
+.formation-description {
+    font-size: 7px;
+    margin-top: 5px;
+    color: #aaa;
+}
+
+/* Terrain info styles */
+.terrain-info, .enemy-ability-info {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 4px;
+    font-size: 8px;
+}
+
+.advantage {
+    color: #4f4;
+}
+
+.disadvantage {
+    color: #f44;
+}
+
+.ability-name {
+    font-weight: bold;
+    color: #fc4;
+}
+
+.ability-description {
+    font-size: 7px;
+    margin-top: 3px;
 }
 
 .attack-button {

@@ -56,7 +56,7 @@ class CombatManager {
     /**
      * Attack an NPC camp with specific units
      */
-    attackNPCWithUnits(targetX, targetY, units) {
+    attackNPCWithUnits(targetX, targetY, units, formation = 'balanced') {
         // Check if we have any units to send
         if (units.SPEARMAN <= 0 && units.ARCHER <= 0 && units.CAVALRY <= 0) {
             console.log('No units to attack with');
@@ -93,6 +93,7 @@ class CombatManager {
         this.activeCombats.set(target.id, {
             target,
             units,
+            formation,
             startTime: Date.now(),
             travelTime: travelTime * 1000, // Convert to milliseconds
             returnTime: null,
@@ -160,8 +161,8 @@ class CombatManager {
                 true // Player wins by default, will be updated after combat resolution
             );
 
-            // Resolve the actual combat
-            const report = this.gameState.resolveCombat(combat.target, combat.units);
+            // Resolve the actual combat with formation
+            const report = this.gameState.resolveCombat(combat.target, combat.units, combat.formation || 'balanced');
 
             // Log the combat result
             const campName = CONFIG.NPC_CAMPS[combat.target.campType].name;
