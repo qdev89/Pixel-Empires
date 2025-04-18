@@ -217,12 +217,83 @@ div.resource-icon {
 }
 
 .cheat-button {
-    background-color: var(--accent-color);
-    border-color: #ff6b81;
+    background-color: #4CAF50; /* Green color for test mode */
+    border-color: #2E7D32;
+    color: white;
+    font-size: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
 }
 
 .cheat-button:hover {
-    background-color: #ff6b81;
+    background-color: #2E7D32;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.cheat-button::before {
+    content: '⚙️';
+    font-size: 16px;
+}
+
+.cheat-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+.cheat-button:hover::after {
+    transform: translateX(100%);
+}
+
+.speed-button {
+    background-color: #2196F3; /* Blue color for speed control */
+    border-color: #0D47A1;
+    color: white;
+    font-size: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.speed-button:hover {
+    background-color: #0D47A1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.speed-button::before {
+    content: '⏱️';
+    font-size: 16px;
+}
+
+.speed-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+.speed-button:hover::after {
+    transform: translateX(100%);
 }
 
 /* Resources bar */
@@ -298,7 +369,7 @@ div.resource-icon {
 
 #map-wrapper {
     position: relative;
-    height: 450px;
+    height: 550px; /* Increased height for better map visibility */
     overflow: hidden;
     background-color: var(--bg-color);
     border-radius: 4px;
@@ -329,6 +400,18 @@ div.resource-icon {
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
 }
 
+.claim-button {
+    background-color: #4CAF50;
+    color: white;
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.claim-button:hover {
+    background-color: #45a049;
+}
+
 #game-map {
     position: absolute;
     width: 100%;
@@ -349,8 +432,8 @@ div.resource-icon {
 
 .map-grid {
     display: grid;
-    grid-template-columns: repeat(20, 40px);
-    grid-template-rows: repeat(20, 40px);
+    grid-template-columns: repeat(30, 40px); /* Updated to match the new map size */
+    grid-template-rows: repeat(30, 40px); /* Updated to match the new map size */
     gap: 2px;
     background-color: var(--bg-color);
     padding: 8px;
@@ -453,14 +536,854 @@ div.resource-icon {
     opacity: 0.2;
 }
 
+/* Resource nodes */
+.resource-node {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: 5;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.resource-node.food {
+    background-color: #4CAF50;
+    background-image: url('../assets/icons/food.png');
+}
+
+.resource-node.ore {
+    background-color: #FF9800;
+    background-image: url('../assets/icons/ore.png');
+}
+
+/* Special resource nodes */
+.resource-node.special-resource {
+    border: 2px solid #FFD700; /* Gold border */
+    animation: pulse 2s infinite;
+}
+
+.resource-node.crystal {
+    background-color: #9C27B0; /* Purple */
+    background-image: url('../assets/icons/crystal.png');
+}
+
+.resource-node.ancient_artifact {
+    background-color: #3F51B5; /* Indigo */
+    background-image: url('../assets/icons/ancient_artifact.png');
+}
+
+.resource-node.rare_metal {
+    background-color: #F44336; /* Red */
+    background-image: url('../assets/icons/rare_metal.png');
+}
+
+.resource-node.ancient_knowledge {
+    background-color: #00BCD4; /* Cyan */
+    background-image: url('../assets/icons/ancient_knowledge.png');
+}
+
+.special-effect-indicator {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #FFD700;
+    box-shadow: 0 0 5px #FFD700;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px #FFD700;
+    }
+    to {
+        box-shadow: 0 0 10px #FFD700, 0 0 15px #FFD700;
+    }
+}
+
+.resource-cell:hover .resource-node {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+}
+
+/* Harvesting Modal */
+#harvest-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+#harvest-modal-content {
+    background-color: var(--bg-color);
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.node-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.resource-node-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+.resource-node-large.food {
+    background-color: #4CAF50;
+    background-image: url('../assets/icons/food.png');
+}
+
+.resource-node-large.ore {
+    background-color: #FF9800;
+    background-image: url('../assets/icons/ore.png');
+}
+
+.node-details {
+    flex: 1;
+}
+
+.node-details h3 {
+    color: var(--highlight-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.node-stat {
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.node-description {
+    margin: 10px 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #cccccc;
+    font-style: italic;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.special-effect {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 4px;
+}
+
+.effect-label {
+    font-weight: bold;
+    color: #FFD700;
+    margin-right: 5px;
+}
+
+.effect-value {
+    color: #ffffff;
+}
+
+.harvest-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.harvest-form h4 {
+    color: var(--highlight-color);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.harvest-info {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+#harvest-estimate {
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.harvest-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    align-self: center;
+}
+
+.harvest-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.harvest-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Harvesting Operations */
+#harvesting-operations {
+    margin-bottom: 15px;
+}
+
+/* Territory Claim Modal */
+.territory-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.territory-info {
+    margin-bottom: 15px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #cccccc;
+}
+
+.territory-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.territory-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.territory-input-group input[type="range"] {
+    flex: 1;
+    height: 10px;
+    -webkit-appearance: none;
+    background: var(--secondary-color);
+    border-radius: 5px;
+    outline: none;
+}
+
+.territory-input-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--highlight-color);
+    cursor: pointer;
+}
+
+#radius-display {
+    font-size: 14px;
+    color: var(--highlight-color);
+    min-width: 60px;
+    text-align: center;
+}
+
+.territory-cost {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.territory-cost h4 {
+    color: var(--highlight-color);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.cost-display {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.territory-benefits {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.territory-benefits h4 {
+    color: var(--highlight-color);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.territory-benefits ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.claim-territory-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    align-self: center;
+}
+
+.claim-territory-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.claim-territory-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#harvesting-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.operation-item {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.operation-traveling {
+    border-left: 4px solid #2196F3; /* Blue */
+}
+
+.operation-harvesting {
+    border-left: 4px solid #4CAF50; /* Green */
+}
+
+.operation-returning {
+    border-left: 4px solid #FF9800; /* Orange */
+}
+
+.operation-status {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.operation-units {
+    font-size: 10px;
+    margin-bottom: 8px;
+    color: #aaaaaa;
+}
+
+.no-operations {
+    text-align: center;
+    padding: 15px;
+    color: #888888;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Map legend */
+.map-legend {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    z-index: 100;
+    color: var(--text-color);
+    font-size: 10px;
+    max-width: 150px;
+}
+
+.legend-title {
+    font-weight: bold;
+    color: var(--highlight-color);
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+}
+
+.legend-icon {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-icon.player {
+    background-color: #4ff;
+}
+
+.legend-icon.enemy {
+    background-color: #f44;
+}
+
+.legend-icon.food {
+    background-color: #4f4;
+}
+
+.legend-icon.ore {
+    background-color: #f84;
+}
+
+.legend-icon.special-resource {
+    background-color: #9C27B0;
+    border: 2px solid #FFD700;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.legend-icon.territory {
+    background-color: rgba(0, 255, 0, 0.3);
+    border: 1px solid rgba(0, 255, 0, 0.8);
+}
+
+.legend-icon.outpost {
+    background-color: #4CAF50;
+    border: 1px solid #2E7D32;
+}
+
+.legend-icon.resource_station {
+    background-color: #FF9800;
+    border: 1px solid #E65100;
+}
+
+.legend-icon.guard_post {
+    background-color: #F44336;
+    border: 1px solid #B71C1C;
+}
+
+/* Territory overlay */
+.territory-overlay {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 255, 0, 0.8);
+    background-color: rgba(0, 255, 0, 0.1);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Outpost styles */
+.outpost-icon {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 4px;
+    z-index: 6;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.outpost-icon.outpost {
+    background-color: #4CAF50;
+    background-image: url('../assets/icons/outpost.png');
+}
+
+.outpost-icon.resource_station {
+    background-color: #FF9800;
+    background-image: url('../assets/icons/resource_station.png');
+}
+
+.outpost-icon.guard_post {
+    background-color: #F44336;
+    background-image: url('../assets/icons/guard_post.png');
+}
+
+.outpost-level {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    background-color: #333;
+    color: white;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #555;
+}
+
+.outpost-cell:hover .outpost-icon {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+}
+
+.construction-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 7;
+}
+
+.construction-progress {
+    height: 100%;
+    background-color: #4CAF50;
+    width: 0%;
+}
+
+/* Outpost modal styles */
+.outpost-icon-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 4px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+.outpost-icon-large.outpost {
+    background-color: #4CAF50;
+    background-image: url('../assets/icons/outpost.png');
+}
+
+.outpost-icon-large.resource_station {
+    background-color: #FF9800;
+    background-image: url('../assets/icons/resource_station.png');
+}
+
+.outpost-icon-large.guard_post {
+    background-color: #F44336;
+    background-image: url('../assets/icons/guard_post.png');
+}
+
+.outpost-icon-medium {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 0;
+}
+
+.outpost-icon-medium.outpost {
+    background-color: #4CAF50;
+    background-image: url('../assets/icons/outpost.png');
+}
+
+.outpost-icon-medium.resource_station {
+    background-color: #FF9800;
+    background-image: url('../assets/icons/resource_station.png');
+}
+
+.outpost-icon-medium.guard_post {
+    background-color: #F44336;
+    background-image: url('../assets/icons/guard_post.png');
+}
+
+.outpost-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.outpost-details {
+    flex: 1;
+}
+
+.outpost-details h3 {
+    color: var(--highlight-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.outpost-stat {
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.outpost-benefits {
+    margin-top: 10px;
+    background-color: var(--secondary-color);
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.outpost-benefits h4 {
+    margin: 0 0 5px 0;
+    font-size: 12px;
+    color: var(--highlight-color);
+}
+
+.outpost-benefit {
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+.progress-section {
+    margin-bottom: 20px;
+}
+
+.progress-section h4 {
+    color: var(--highlight-color);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.progress-text {
+    font-size: 12px;
+    margin-top: 5px;
+    color: #aaaaaa;
+}
+
+.upgrade-section {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.upgrade-section h4 {
+    color: var(--highlight-color);
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.upgrade-cost {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.upgrade-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.upgrade-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.upgrade-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Build outpost modal styles */
+.outpost-description {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #cccccc;
+    margin-bottom: 20px;
+}
+
+.outpost-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.outpost-option {
+    display: flex;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    gap: 15px;
+}
+
+.outpost-option.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.outpost-option-details {
+    flex: 1;
+}
+
+.outpost-option-details h4 {
+    color: var(--highlight-color);
+    margin: 0 0 5px 0;
+    font-size: 14px;
+}
+
+.outpost-option-description {
+    font-size: 11px;
+    margin-bottom: 8px;
+    color: #cccccc;
+}
+
+.outpost-option-cost {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.outpost-benefits-list {
+    margin: 5px 0 0 0;
+    padding-left: 20px;
+    font-size: 11px;
+}
+
+.outpost-benefits-list li {
+    margin-bottom: 3px;
+}
+
+.build-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    align-self: flex-end;
+    margin-top: auto;
+}
+
+.build-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.build-button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.build-outpost-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+    display: block;
+}
+
+.build-outpost-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.territory-info {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
 /* Minimap styles */
 #minimap-container {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    width: 120px;
-    height: 120px;
-    background-color: rgba(0, 0, 0, 0.5);
+    width: 150px; /* Increased size */
+    height: 150px; /* Increased size */
+    background-color: rgba(0, 0, 0, 0.7);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     overflow: hidden;
@@ -480,28 +1403,118 @@ div.resource-icon {
     pointer-events: none;
 }
 
-/* Player base */
-#player-base {
+/* Empire Section */
+#empire-section {
     display: flex;
     flex-direction: column;
     flex: 1;
 }
 
-#player-base h2 {
-    font-size: 16px;
+/* Empire Overview */
+#empire-overview {
     margin-bottom: 15px;
-    color: #ffcc00;
-    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Empire Tabs */
+#empire-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.empire-tab-button {
+    flex: 1;
+    min-width: 80px;
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.empire-tab-button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-1px);
+}
+
+.empire-tab-button.active {
+    background-color: var(--accent-color);
+    border-color: #ff6b81;
+    color: white;
+}
+
+.tab-icon {
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Tab icons */
+.tab-icon.buildings { background-image: url('../assets/icons/buildings.png'); }
+.tab-icon.military { background-image: url('../assets/icons/military.png'); }
+.tab-icon.research { background-image: url('../assets/icons/research.png'); }
+.tab-icon.diplomacy { background-image: url('../assets/icons/diplomacy.png'); }
+.tab-icon.reports { background-image: url('../assets/icons/reports.png'); }
+
+/* Tab Content */
+#empire-tab-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-content {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
+.tab-content.active {
+    display: flex;
+}
+
+.tab-section {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tab-section h4 {
+    font-size: 14px;
+    color: var(--highlight-color);
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 #buildings-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
     margin-top: 10px;
     flex-grow: 1;
     align-content: start;
-    min-height: 180px;
+    max-height: 150px;
+    overflow-y: auto;
 }
 
 .building-tile {
@@ -515,20 +1528,20 @@ div.resource-icon {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    padding: 5px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    padding: 3px;
 }
 
 .building-tile:hover {
     border-color: var(--highlight-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .building-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -538,23 +1551,41 @@ div.resource-icon {
     color: var(--text-color);
     background-color: var(--secondary-color);
     border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
+/* Building icons */
+.building-icon.FARM { background-image: url('../assets/icons/farm.png'); }
+.building-icon.MINE { background-image: url('../assets/icons/mine.png'); }
+.building-icon.STORAGE { background-image: url('../assets/icons/storage.png'); }
+.building-icon.BARRACKS { background-image: url('../assets/icons/barracks.png'); }
+.building-icon.WALL { background-image: url('../assets/icons/wall.png'); }
+.building-icon.MARKET { background-image: url('../assets/icons/market.png'); }
+.building-icon.LIBRARY { background-image: url('../assets/icons/library.png'); }
+.building-icon.WATCHTOWER { background-image: url('../assets/icons/watchtower.png'); }
+.building-icon.WORKSHOP { background-image: url('../assets/icons/workshop.png'); }
+
 .building-name {
-    font-size: 7px;
+    font-size: 10px;
     margin-top: 5px;
     text-align: center;
     color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .building-level {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 2px;
+    right: 2px;
     background-color: var(--highlight-color);
     color: #000;
-    font-size: 7px;
+    font-size: 10px;
     padding: 2px 4px;
     border-radius: 3px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -576,38 +1607,94 @@ div.resource-icon {
 #building-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 6px;
     overflow-y: auto;
-    max-height: 300px;
+    max-height: 200px;
 }
 
 .building-button {
-    background-color: #444;
-    border: 2px solid #555;
-    color: #fff;
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     padding: 8px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
+    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
 }
 
 .building-button:hover {
-    background-color: #555;
-    border-color: #ffcc00;
+    background-color: var(--button-hover);
+    border-color: var(--highlight-color);
+    transform: translateY(-1px);
 }
 
 .building-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+}
+
+.building-button-icon {
+    width: 24px;
+    height: 24px;
+    background-color: var(--secondary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Building button icons */
+.building-button-icon.FARM { background-image: url('../assets/icons/farm.png'); }
+.building-button-icon.MINE { background-image: url('../assets/icons/mine.png'); }
+.building-button-icon.STORAGE { background-image: url('../assets/icons/storage.png'); }
+.building-button-icon.BARRACKS { background-image: url('../assets/icons/barracks.png'); }
+.building-button-icon.WALL { background-image: url('../assets/icons/wall.png'); }
+.building-button-icon.MARKET { background-image: url('../assets/icons/market.png'); }
+.building-button-icon.LIBRARY { background-image: url('../assets/icons/library.png'); }
+.building-button-icon.WATCHTOWER { background-image: url('../assets/icons/watchtower.png'); }
+.building-button-icon.WORKSHOP { background-image: url('../assets/icons/workshop.png'); }
+
+.building-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .building-cost {
-    font-size: 8px;
+    font-size: 10px;
     color: #aaa;
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
 }
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cost-icon {
+    width: 12px;
+    height: 12px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cost-icon.food { background-image: url('../assets/icons/food.png'); }
+.cost-icon.ore { background-image: url('../assets/icons/ore.png'); }
 
 /* Unit controls */
 #unit-controls {
@@ -625,19 +1712,19 @@ div.resource-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 10px;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-color);
     background-color: var(--secondary-color);
-    padding: 5px 8px;
+    padding: 6px 10px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
 }
 
 .upkeep-icon {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -645,30 +1732,31 @@ div.resource-icon {
     background-color: #2a6e2a;
     color: white;
     font-weight: bold;
-    font-size: 8px;
+    font-size: 10px;
 }
 
 .unit-stat {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background-color: var(--secondary-color);
-    padding: 6px 8px;
+    padding: 8px 10px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
 }
 
 .unit-icon {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     vertical-align: middle;
     margin-right: 4px;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-color);
     border-radius: 50%;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -697,13 +1785,41 @@ div.resource-icon {
     background-color: var(--button-color);
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    padding: 6px 8px;
+    padding: 8px 12px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 8px;
+    font-size: 12px;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unit-icon-small {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+}
+
+.unit-icon-small.SPEARMAN {
+    background-color: #2a6e2a;
+}
+
+.unit-icon-small.ARCHER {
+    background-color: #6e2a2a;
+}
+
+.unit-icon-small.CAVALRY {
+    background-color: #2a2a6e;
 }
 
 .train-button:hover {
@@ -719,6 +1835,48 @@ div.resource-icon {
     box-shadow: none;
 }
 
+/* Training queue display */
+.training-queue-display {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.training-header {
+    font-size: 12px;
+    color: var(--highlight-color);
+    margin-bottom: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.training-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.unit-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+}
+
+.training-progress {
+    margin-top: 5px;
+}
+
+.training-progress .progress-text {
+    font-size: 9px;
+    text-align: center;
+    margin-bottom: 4px;
+    color: var(--text-color);
+}
+
 /* Research controls */
 #research-controls {
     flex: 2;
@@ -731,18 +1889,18 @@ div.resource-icon {
 }
 
 #current-research {
-    font-size: 9px;
-    margin-bottom: 5px;
+    font-size: 12px;
+    margin-bottom: 8px;
     color: var(--text-color);
     background-color: var(--secondary-color);
-    padding: 5px 8px;
+    padding: 8px 10px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
 }
 
 .progress-container {
     width: 100%;
-    height: 8px;
+    height: 12px;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 4px;
@@ -759,18 +1917,20 @@ div.resource-icon {
 
 #research-tabs {
     display: flex;
+    flex-wrap: wrap;
     margin-bottom: 10px;
     gap: 5px;
 }
 
 .research-tab-button {
     flex: 1;
+    min-width: 100px;
     background-color: var(--button-color);
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    padding: 5px;
+    padding: 6px 4px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 7px;
+    font-size: 9px;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s ease;
@@ -800,11 +1960,11 @@ div.resource-icon {
 
 .research-item {
     margin-bottom: 10px;
-    padding: 8px;
+    padding: 10px;
     background-color: #333;
     border: 1px solid #444;
     border-radius: 3px;
-    font-size: 8px;
+    font-size: 12px;
 }
 
 .research-item.researched {
@@ -817,36 +1977,36 @@ div.resource-icon {
 }
 
 .research-name {
-    font-size: 10px;
-    margin-bottom: 5px;
+    font-size: 14px;
+    margin-bottom: 8px;
     color: #ffcc00;
 }
 
 .research-description {
-    font-size: 8px;
-    margin-bottom: 5px;
+    font-size: 12px;
+    margin-bottom: 8px;
 }
 
 .research-cost {
-    font-size: 8px;
+    font-size: 12px;
     color: #aaaaaa;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .research-time {
-    font-size: 8px;
+    font-size: 12px;
     color: #aaaaaa;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .research-effects {
-    font-size: 8px;
+    font-size: 12px;
     color: #44ff44;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .research-requirements {
-    font-size: 8px;
+    font-size: 12px;
     color: #ff4444;
 }
 
@@ -854,11 +2014,12 @@ div.resource-icon {
     background-color: #114488;
     border: 1px solid #2266aa;
     color: #fff;
-    padding: 5px 10px;
+    padding: 8px 12px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 8px;
+    font-size: 12px;
     cursor: pointer;
-    margin-top: 5px;
+    margin-top: 8px;
+    border-radius: 4px;
 }
 
 .research-button:hover {
@@ -881,12 +2042,13 @@ div.resource-icon {
     background-color: #881111;
     border: 2px solid #aa2222;
     color: #fff;
-    padding: 10px 15px;
+    padding: 12px 18px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
+    font-size: 14px;
     cursor: pointer;
     margin-bottom: 15px;
     align-self: center;
+    border-radius: 4px;
 }
 
 #attack-button:hover {
@@ -901,11 +2063,12 @@ div.resource-icon {
 #combat-reports {
     background-color: #222;
     border: 2px solid #444;
-    padding: 10px;
+    padding: 12px;
     flex: 1;
     overflow-y: auto;
-    font-size: 10px;
+    font-size: 12px;
     min-height: 150px;
+    border-radius: 4px;
 }
 
 /* Combat reports */
@@ -916,11 +2079,11 @@ div.resource-icon {
 
 .combat-reports-section h4,
 .active-combats-section h4 {
-    font-size: 10px;
-    margin-bottom: 8px;
+    font-size: 14px;
+    margin-bottom: 10px;
     color: #ffcc00;
     border-bottom: 1px solid #444;
-    padding-bottom: 5px;
+    padding-bottom: 6px;
 }
 
 .combat-report {
@@ -1601,6 +2764,32 @@ div.resource-icon {
     animation: pulse 1.5s infinite;
 }
 
+.construction-progress {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.construction-progress .progress-text {
+    font-size: 9px;
+    text-align: center;
+    margin-bottom: 2px;
+    color: var(--highlight-color);
+}
+
+.construction-progress .progress-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--bg-color);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.construction-progress .progress-bar {
+    height: 100%;
+    background-color: var(--highlight-color);
+    transition: width 0.3s ease;
+}
+
 /* Resource production animations removed as per user preference */
 
 /* Events and Challenges Styles */
@@ -2143,4 +3332,405 @@ div.resource-icon {
 img {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+}
+
+/* Chat button */
+.chat-button {
+    background-color: #9C27B0; /* Purple color for chat */
+    border-color: #7B1FA2;
+    color: white;
+    font-size: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-button:hover {
+    background-color: #7B1FA2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.chat-button::before {
+    content: '💬';
+    font-size: 16px;
+}
+
+.chat-button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s ease;
+}
+
+.chat-button:hover::after {
+    transform: translateX(100%);
+}
+
+.chat-button.has-notifications::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    background-color: #F44336;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse 1s infinite;
+}
+
+/* Chat Modal */
+#chat-modal .modal-content {
+    width: 80%;
+    max-width: 800px;
+    height: 70vh;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+#chat-modal h3 {
+    padding: 15px;
+    margin: 0;
+    background-color: var(--secondary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#chat-modal .close-button {
+    top: 15px;
+    right: 15px;
+}
+
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#chat-channels {
+    display: flex;
+    background-color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-channel-button {
+    padding: 10px 15px;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-color);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-channel-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chat-channel-button.active {
+    border-bottom-color: var(--accent-color);
+    color: var(--highlight-color);
+}
+
+.chat-channel-button.has-unread {
+    position: relative;
+}
+
+.notification-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background-color: #F44336;
+    border-radius: 50%;
+    animation: pulse 1s infinite;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-message {
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-break: break-word;
+    font-size: 12px;
+    line-height: 1.4;
+    animation: fadeIn 0.3s ease;
+}
+
+.chat-message.own {
+    align-self: flex-end;
+    background-color: var(--accent-color);
+    color: white;
+    border-bottom-right-radius: 0;
+}
+
+.chat-message.other {
+    align-self: flex-start;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-bottom-left-radius: 0;
+}
+
+.chat-message.faction {
+    background-color: #2196F3;
+    color: white;
+}
+
+.chat-message.private {
+    background-color: #9C27B0;
+    color: white;
+}
+
+.system-message {
+    align-self: center;
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    font-size: 10px;
+    color: #aaa;
+    margin: 5px 0;
+}
+
+.message-sender {
+    font-weight: bold;
+    margin-bottom: 3px;
+    font-size: 10px;
+    color: var(--highlight-color);
+}
+
+.message-time {
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 3px;
+    text-align: right;
+}
+
+#chat-input-container {
+    display: flex;
+    padding: 10px;
+    background-color: var(--primary-color);
+    border-top: 1px solid var(--border-color);
+}
+
+#chat-input {
+    flex: 1;
+    padding: 8px 12px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+#chat-send-button {
+    padding: 8px 15px;
+    margin-left: 10px;
+    background-color: var(--accent-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#chat-send-button:hover {
+    background-color: #d03b50;
+    transform: translateY(-1px);
+}
+
+#chat-send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Combat reports */
+#combat-reports {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Diplomacy styles */
+#diplomatic-relations {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.no-relations-message {
+    color: #aaa;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+#available-factions {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.faction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    margin-bottom: 8px;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.faction-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.faction-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.faction-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.faction-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.faction-type {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.relation-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.relation-neutral {
+    background-color: #555;
+    color: #fff;
+}
+
+.relation-friendly {
+    background-color: #4CAF50;
+    color: #fff;
+}
+
+.relation-alliance {
+    background-color: #2196F3;
+    color: #fff;
+}
+
+.relation-hostile {
+    background-color: #F44336;
+    color: #fff;
+}
+
+.relation-war {
+    background-color: #B71C1C;
+    color: #fff;
+}
+
+#diplomatic-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.diplomatic-button {
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+}
+
+.diplomatic-button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+.diplomatic-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.diplomatic-button.establish {
+    background-color: #555;
+}
+
+.diplomatic-button.alliance {
+    background-color: #2196F3;
+}
+
+.diplomatic-button.war {
+    background-color: #F44336;
+}
+
+.diplomatic-button.emissary {
+    background-color: #4CAF50;
 }

@@ -45,26 +45,49 @@ Pixel Empires is a retro pixel art strategy game with a build & raid loop. The g
 - Enhanced building visuals with state indicators (constructing, producing)
 - Added pulsing effects for active buildings
 
-### Phase 6: Advanced Game Features (In Progress)
-- Implement unit animations (walking, attacking, idle)
-- Enhance map visuals with varied terrain
-- Add special events and challenges
-- Implement achievements system
-- Create tutorial and help system
+### Phase 6: Advanced Game Features (Completed)
+- Implemented unit animations (walking, attacking, idle)
+- Enhanced map visuals with varied terrain
+- Added special events and challenges
+- Implemented weather and season effects
+- Created tutorial and help system
 
-### Phase 7: Server-Side Implementation
-- Set up Node.js/Express backend
-- Implement database for persistent game state
-- Add user authentication and accounts
-- Create API endpoints for game actions
-- Implement real-time updates
+### Phase 7: Diplomacy and Communication (Completed)
+- Implemented diplomacy interface with faction relations
+- Added alliance formation and management
+- Created diplomatic action system (establish relations, propose alliance, declare war)
+- Implemented chat system with multiple channels (global, faction, private)
+- Added notification system for important events
 
-### Phase 8: Multiplayer Features
+### Phase 8: Enhanced Map Features (In Progress)
+- Adding more terrain types and features
+- Implementing fog of war for unexplored areas
+- Adding special locations and points of interest
+- Creating a more detailed minimap
+
+### Phase 9: Hero System (Planned)
+- Hero units with special abilities
+- Hero progression and skill trees
+- Hero equipment and inventory
+- Hero-specific quests and missions
+
+### Phase 10: Advanced Combat System (Planned)
+- More unit types and formations
+- Detailed battle visualization
+- Terrain and weather combat bonuses
+- Siege weapons and defensive structures
+
+### Phase 11: Economy Expansion (Planned)
+- Advanced trade routes and markets
+- Resource refinement and processing
+- Luxury goods and special resources
+- Economic policies and taxation
+
+### Phase 12: Multiplayer Features (Planned)
 - Player vs Player combat
-- Alliances and diplomacy
-- Chat system
 - Leaderboards and rankings
-- Trading system
+- Synchronized game state
+- Anti-cheat measures
 
 ## Technical Architecture
 
@@ -152,25 +175,48 @@ Pixel Empires is a retro pixel art strategy game with a build & raid loop. The g
 - Improved UI with visual feedback
 - Animation system architecture
 
-### Milestone 6: Advanced Features (In Progress)
+### Milestone 6: Advanced Features (Completed)
 - Unit animations
 - Enhanced map visuals
 - Special events
-- Achievements
+- Weather and season effects
 
-### Milestone 7: Server Integration (Planned)
-- Backend setup
-- Database integration
-- User accounts
+### Milestone 7: Diplomacy and Communication (Completed)
+- Diplomacy interface
+- Alliance system
+- Diplomatic actions
+- Chat system with multiple channels
+- Notification system
 
-### Milestone 8: Multiplayer (Planned)
-- PvP combat
-- Alliances
-- Social features
+### Milestone 8: Enhanced Map Features (In Progress)
+- More terrain types
+- Fog of war system
+- Special locations and points of interest
+- Detailed minimap
+
+### Milestone 9: Hero System (Planned)
+- Hero units with special abilities
+- Hero progression and skill trees
+- Hero equipment and inventory
+- Hero-specific quests
+
+### Milestone 10: Advanced Combat (Planned)
+- More unit types and formations
+- Detailed battle visualization
+- Terrain and weather combat bonuses
+- Siege weapons and defensive structures
+
+### Milestone 11: Economy Expansion (Planned)
+- Advanced trade routes and markets
+- Resource refinement and processing
+- Luxury goods and special resources
+- Economic policies and taxation
 
 ## Current Status
 
-The project is currently in Phase 6, with the research system, enhanced combat system, and animation system completed. We have successfully implemented visual enhancements including building construction animations, resource production animations, and resource gain animations. The next steps involve implementing more advanced game features such as unit animations, enhanced map visuals, and special events.
+The project is currently in Phase 8 (Enhanced Map Features), with the research system, enhanced combat system, animation system, diplomacy interface, and chat system completed. We have successfully implemented a comprehensive diplomacy system that allows players to establish relations with other factions, form alliances, and declare war. We've also added a multi-channel chat system with global, faction, and private messaging capabilities.
+
+The current focus is on enhancing the map system with more terrain types, a fog of war system for unexplored areas, special locations and points of interest, and a more detailed minimap. These enhancements will make the game world more immersive and strategic for players.
 
 ## Future Considerations
 
@@ -183,3 +229,65 @@ The project is currently in Phase 6, with the research system, enhanced combat s
 - Additional unit types and buildings
 - Campaign mode with storyline
 - Achievement system
+- World events system with natural disasters and opportunities
+- NPC faction wars and migrations
+- Special limited-time events
+- Performance optimization for large maps
+- Multiple save slots and auto-save functionality
+- Real-time multiplayer with synchronized game state
+
+## Testing Strategy
+
+### Continuous Testing
+- Regular testing during development of each feature
+- Test button for unlimited resources to facilitate testing
+- Automated unit tests for core game mechanics
+- Cross-browser compatibility testing
+
+### Playtesting
+- Regular playtesting sessions with team members
+- External playtesting with target audience
+- Feedback collection and implementation
+- Balance testing for game mechanics
+
+### Performance Testing
+- Benchmarking for different device capabilities
+- Memory usage monitoring for long gameplay sessions
+- Load testing for multiplayer features
+- Optimization based on performance metrics
+
+### Quality Assurance
+- Bug tracking and resolution system
+- Regression testing after major updates
+- Compatibility testing across different devices
+- User experience evaluation
+
+## Design Principles
+
+### Visual Design
+- Pixel art aesthetic with consistent UI design
+- Clear visual hierarchy and information presentation
+- Readable font sizes for all text elements
+- Consistent color scheme and iconography
+- Visual feedback for all player actions
+
+### User Interface
+- All content on one scrollable page
+- Intuitive navigation between game sections
+- Minimal clicks required for common actions
+- Responsive design that adapts to different screen sizes
+- Consistent placement of UI elements
+
+### Gameplay
+- Real-time gameplay instead of turn-based
+- Balanced progression system
+- Multiple viable strategies for success
+- Clear goals and feedback on progress
+- Meaningful choices with strategic impact
+
+### Accessibility
+- Configurable UI scaling
+- Color-blind friendly design options
+- Keyboard shortcuts for common actions
+- Clear tutorial and help system
+- Adjustable game speed

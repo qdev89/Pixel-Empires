@@ -19,7 +19,26 @@ class GameState {
         this.trainingQueue = [];
         this.researchQueue = [];
         this.combatReports = [];
+        this.harvestingOperations = []; // Track active harvesting operations
+        this.claimedTerritories = []; // Track claimed territories
+        this.outposts = []; // Track outposts in territories
+        this.territoryMaintenanceCosts = {}; // Track maintenance costs for territories
+        this.lastResourceRegenerationTime = Date.now(); // Track when resources were last regenerated
+        this.territoryConflicts = []; // Track territory conflicts
+        this.specializedUnits = {}; // Track specialized units
+        this.diplomaticRelations = []; // Track diplomatic relations with other players
+        this.specialResourceNodes = []; // Track special resource nodes
         this.isOnline = true; // Online status
+
+        // Initialize additional systems
+        this.tradeSystem = null; // Will be initialized after game state is fully loaded
+        this.combatSystem = null; // Will be initialized after game state is fully loaded
+        this.questSystem = null; // Will be initialized after game state is fully loaded
+        this.weatherSystem = null; // Will be initialized after game state is fully loaded
+
+        // Game speed settings (1.0 = normal speed)
+        this.gameSpeed = 1.0;
+        this.availableGameSpeeds = [0.5, 1.0, 2.0, 4.0]; // Half, normal, double, quadruple speed
 
         // Calculate initial storage capacity
         this.storageCapacity = {
@@ -77,6 +96,9 @@ class GameState {
 
         // Initialize save system
         this.saveSystem = new SaveSystem(this);
+
+        // Initialize additional systems
+        this.initializeAdditionalSystems();
     }
 
     /**
@@ -115,26 +137,94 @@ class GameState {
     }
 
     /**
+     * Initialize additional game systems
+     */
+    initializeAdditionalSystems() {
+        // Initialize trade system
+        if (typeof TradeSystem !== 'undefined') {
+            this.tradeSystem = new TradeSystem(this);
+        }
+
+        // Initialize combat system
+        if (typeof CombatSystem !== 'undefined') {
+            this.combatSystem = new CombatSystem(this);
+        }
+
+        // Initialize quest system
+        if (typeof QuestSystem !== 'undefined') {
+            this.questSystem = new QuestSystem(this);
+        }
+
+        // Initialize weather system
+        if (typeof WeatherSystem !== 'undefined') {
+            this.weatherSystem = new WeatherSystem(this);
+        }
+    }
+
+    /**
      * Update game state (called on each game tick)
      */
     update() {
         const now = Date.now();
-        const deltaTime = (now - this.lastTick) / 1000; // Convert to seconds
+        let deltaTime = (now - this.lastTick) / 1000; // Convert to seconds
+
+        // Apply game speed multiplier
+        deltaTime *= this.gameSpeed;
+
         this.lastTick = now;
+
+        // Update weather system
+        if (this.weatherSystem) {
+            this.weatherSystem.update();
+        }
 
         // Calculate storage capacity (affected by technologies)
         this.calculateStorageCapacity();
 
-        // Generate resources
+        // Generate resources (affected by weather and season)
         this.generateResources(deltaTime);
 
-        // Process build queue
+        // Process build queue (affected by season)
         this.processBuildQueue(deltaTime);
 
         // Process training queue
         this.processTrainingQueue(deltaTime);
 
-        // Process research queue
+        // Process harvesting operations (affected by weather)
+        this.processHarvestingOperations(deltaTime);
+
+        // Process resource node regeneration (affected by season)
+        this.processResourceNodeRegeneration();
+
+        // Apply territory maintenance costs (every minute)
+        this.applyTerritoryMaintenanceCosts(deltaTime);
+
+        // Process outpost construction and upgrades
+        this.processOutpostConstruction();
+        this.processOutpostUpgrades();
+
+        // Process territory conflicts
+        this.processTerritoryConflicts(deltaTime);
+
+        // Process diplomatic relations
+        this.processDiplomaticRelations(deltaTime);
+
+        // Process trade system
+        if (this.tradeSystem) {
+            this.tradeSystem.update();
+        }
+
+        // Process combat system
+        if (this.combatSystem) {
+            this.combatSystem.update();
+        }
+
+        // Process quest system
+        if (this.questSystem) {
+            this.questSystem.update();
+        }
+
+        // Process research queue (affected by season)
         if (researchManager) {
             researchManager.processResearchQueue(deltaTime);
         }
@@ -188,6 +278,12 @@ class GameState {
         // Apply event bonuses
         foodProduction *= this.eventBonuses.foodProduction;
         oreProduction *= this.eventBonuses.oreProduction;
+
+        // Apply weather and season effects if available
+        if (this.weatherSystem) {
+            foodProduction *= this.weatherSystem.getResourceProductionModifier('FOOD');
+            oreProduction *= this.weatherSystem.getResourceProductionModifier('ORE');
+        }
 
         // Calculate actual gains
         const foodGain = foodProduction * deltaTime;
@@ -249,7 +345,12 @@ class GameState {
     processBuildQueue(deltaTime) {
         if (this.buildQueue.length > 0) {
             // Apply event bonuses to construction speed
-            const speedMultiplier = this.eventBonuses.constructionSpeed;
+            let speedMultiplier = this.eventBonuses.constructionSpeed;
+
+            // Apply season effects if available
+            if (this.weatherSystem) {
+                speedMultiplier *= this.weatherSystem.getBuildSpeedModifier();
+            }
 
             const currentBuild = this.buildQueue[0];
             currentBuild.timeRemaining -= deltaTime * speedMultiplier;
@@ -818,6 +919,29 @@ class GameState {
     }
 
     /**
+     * Set game speed
+     * @param {number} speedIndex - Index in the availableGameSpeeds array
+     */
+    setGameSpeed(speedIndex) {
+        if (speedIndex >= 0 && speedIndex < this.availableGameSpeeds.length) {
+            this.gameSpeed = this.availableGameSpeeds[speedIndex];
+            this.activityLogManager.addLogEntry('System', `Game speed set to ${this.gameSpeed}x`);
+            this.onStateChange();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Cycle to the next game speed
+     */
+    cycleGameSpeed() {
+        const currentIndex = this.availableGameSpeeds.indexOf(this.gameSpeed);
+        const nextIndex = (currentIndex + 1) % this.availableGameSpeeds.length;
+        this.setGameSpeed(nextIndex);
+    }
+
+    /**
      * Set unlimited resources for testing
      */
     setUnlimitedResources() {
@@ -842,6 +966,999 @@ class GameState {
 
         // Trigger UI update
         this.onStateChange();
+    }
+
+    /**
+     * Start a harvesting operation at a resource node
+     * @param {Object} node - The resource node to harvest from
+     * @param {Object} units - The units to send for harvesting {SPEARMAN: 0, ARCHER: 0, CAVALRY: 0}
+     * @returns {boolean} - Whether the operation was started successfully
+     */
+    startHarvesting(node, units) {
+        // Check if we have enough units
+        if (units.SPEARMAN > this.units.SPEARMAN ||
+            units.ARCHER > this.units.ARCHER ||
+            units.CAVALRY > this.units.CAVALRY) {
+            console.log('Not enough units available for harvesting');
+            return false;
+        }
+
+        // Check if any units are being sent
+        const totalUnits = units.SPEARMAN + units.ARCHER + units.CAVALRY;
+        if (totalUnits <= 0) {
+            console.log('No units selected for harvesting');
+            return false;
+        }
+
+        // Calculate travel time based on distance (1 second per tile)
+        const playerBase = this.findPlayerBase();
+        if (!playerBase) {
+            console.log('Player base not found');
+            return false;
+        }
+
+        const distance = Math.sqrt(
+            Math.pow(node.x - playerBase.x, 2) +
+            Math.pow(node.y - playerBase.y, 2)
+        );
+
+        const travelTime = distance * 1; // 1 second per tile
+
+        // Remove units from player's army
+        this.units.SPEARMAN -= units.SPEARMAN;
+        this.units.ARCHER -= units.ARCHER;
+        this.units.CAVALRY -= units.CAVALRY;
+
+        // Create harvesting operation
+        const operation = {
+            id: Date.now(), // Unique ID
+            nodeId: `${node.type}_${node.x}_${node.y}`,
+            node: { ...node }, // Copy node data
+            units: { ...units },
+            status: 'traveling', // traveling, harvesting, returning
+            startTime: Date.now(),
+            travelTime: travelTime * 1000, // Convert to milliseconds
+            harvestTime: 0, // Will be set when harvesting starts
+            resourcesHarvested: 0,
+            returnTime: 0, // Will be set when returning starts
+            completionTime: 0 // Will be set when operation completes
+        };
+
+        this.harvestingOperations.push(operation);
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Harvesting',
+            `Sent ${totalUnits} units to harvest ${node.type} at (${node.x}, ${node.y})`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process harvesting operations
+     * @param {number} deltaTime - Time elapsed since last update in seconds
+     */
+    processHarvestingOperations(deltaTime) {
+        if (this.harvestingOperations.length === 0) return;
+
+        const now = Date.now();
+        const completedOperations = [];
+
+        for (let i = 0; i < this.harvestingOperations.length; i++) {
+            const operation = this.harvestingOperations[i];
+
+            if (operation.status === 'traveling') {
+                // Check if units have arrived at the resource node
+                if (now >= operation.startTime + operation.travelTime) {
+                    // Start harvesting
+                    operation.status = 'harvesting';
+                    operation.harvestTime = now;
+
+                    // Calculate harvesting duration based on units (more units = faster harvesting)
+                    // Base time: 30 seconds, reduced by 1 second per unit, minimum 5 seconds
+                    const totalUnits = operation.units.SPEARMAN + operation.units.ARCHER + operation.units.CAVALRY;
+                    const harvestDuration = Math.max(30 - totalUnits, 5);
+                    operation.harvestDuration = harvestDuration * 1000; // Convert to milliseconds
+                }
+            }
+            else if (operation.status === 'harvesting') {
+                // Check if harvesting is complete
+                if (now >= operation.harvestTime + operation.harvestDuration) {
+                    // Calculate resources harvested based on node type and units
+                    const totalUnits = operation.units.SPEARMAN + operation.units.ARCHER + operation.units.CAVALRY;
+                    const baseAmount = operation.node.harvestRate * totalUnits;
+
+                    // Cavalry are more efficient at harvesting (1.5x)
+                    const cavalryBonus = operation.units.CAVALRY * 0.5 * operation.node.harvestRate;
+                    operation.resourcesHarvested = Math.min(baseAmount + cavalryBonus, operation.node.amount);
+
+                    // Update node's remaining resources
+                    operation.node.amount -= operation.resourcesHarvested;
+
+                    // Start returning to base
+                    operation.status = 'returning';
+                    operation.returnTime = now;
+                }
+            }
+            else if (operation.status === 'returning') {
+                // Check if units have returned to base
+                if (now >= operation.returnTime + operation.travelTime) {
+                    // Add harvested resources to player's stockpile
+                    if (operation.node.type === 'FOOD') {
+                        this.resources.FOOD = Math.min(
+                            this.resources.FOOD + operation.resourcesHarvested,
+                            this.storageCapacity.FOOD
+                        );
+                    } else if (operation.node.type === 'ORE') {
+                        this.resources.ORE = Math.min(
+                            this.resources.ORE + operation.resourcesHarvested,
+                            this.storageCapacity.ORE
+                        );
+                    }
+
+                    // Return units to player's army
+                    this.units.SPEARMAN += operation.units.SPEARMAN;
+                    this.units.ARCHER += operation.units.ARCHER;
+                    this.units.CAVALRY += operation.units.CAVALRY;
+
+                    // Mark operation as completed
+                    operation.status = 'completed';
+                    operation.completionTime = now;
+                    completedOperations.push(operation);
+
+                    // Log the completion
+                    this.activityLogManager.addLogEntry(
+                        'Harvesting',
+                        `Harvested ${operation.resourcesHarvested} ${operation.node.type} from (${operation.node.x}, ${operation.node.y})`
+                    );
+                }
+            }
+        }
+
+        // Remove completed operations
+        if (completedOperations.length > 0) {
+            this.harvestingOperations = this.harvestingOperations.filter(
+                op => !completedOperations.includes(op)
+            );
+
+            // Trigger UI update
+            this.onStateChange();
+        }
+    }
+
+    /**
+     * Find the player's base on the map
+     * @returns {Object|null} - The player base coordinates or null if not found
+     */
+    findPlayerBase() {
+        for (let y = 0; y < this.mapSize.height; y++) {
+            for (let x = 0; x < this.mapSize.width; x++) {
+                if (this.map[y] && this.map[y][x] && this.map[y][x].type === 'PLAYER') {
+                    return { x, y };
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Claim territory around a location
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @param {number} radius - Radius of territory to claim (in tiles)
+     * @returns {boolean} - Whether the territory was claimed successfully
+     */
+    claimTerritory(x, y, radius) {
+        // Check if we have enough resources to claim territory
+        const claimCost = {
+            FOOD: 100 * radius,
+            ORE: 150 * radius
+        };
+
+        if (this.resources.FOOD < claimCost.FOOD || this.resources.ORE < claimCost.ORE) {
+            console.log('Not enough resources to claim territory');
+            return false;
+        }
+
+        // Deduct resources
+        this.resources.FOOD -= claimCost.FOOD;
+        this.resources.ORE -= claimCost.ORE;
+
+        // Create territory claim
+        const territory = {
+            id: Date.now(),
+            x,
+            y,
+            radius,
+            claimedAt: Date.now(),
+            resourceNodes: [], // Resource nodes within this territory
+            outposts: [], // Outposts built in this territory
+            benefits: { // Benefits provided by this territory
+                harvestingBonus: 0,
+                resourceBonus: 0,
+                defenseBonus: 0,
+                regenerationBonus: 0
+            },
+            maintenanceCost: { // Maintenance cost per minute
+                FOOD: 10 * radius,
+                ORE: 5 * radius
+            }
+        };
+
+        // Find resource nodes within this territory
+        if (ui && ui.resourceNodes) {
+            territory.resourceNodes = ui.resourceNodes.filter(node => {
+                const distance = Math.sqrt(
+                    Math.pow(node.x - x, 2) +
+                    Math.pow(node.y - y, 2)
+                );
+                return distance <= radius;
+            });
+        }
+
+        this.claimedTerritories.push(territory);
+
+        // Set up maintenance costs
+        this.territoryMaintenanceCosts[territory.id] = {
+            lastCollected: Date.now(),
+            costs: territory.maintenanceCost
+        };
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Territory',
+            `Claimed territory at (${x}, ${y}) with radius ${radius}`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process resource node regeneration
+     * Regenerates resource nodes over time
+     */
+    processResourceNodeRegeneration() {
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+        // Only regenerate every 5 minutes
+        if (now - this.lastResourceRegenerationTime < fiveMinutes) {
+            return;
+        }
+
+        this.lastResourceRegenerationTime = now;
+
+        // Get all resource nodes from UI
+        if (!ui || !ui.resourceNodes || ui.resourceNodes.length === 0) {
+            return;
+        }
+
+        // Calculate regeneration amount for each node
+        for (const node of ui.resourceNodes) {
+            // Skip nodes that are at max capacity
+            if (node.amount >= 1000) continue;
+
+            // Base regeneration amount
+            let regenerationAmount = 0;
+
+            if (node.type === 'FOOD') {
+                regenerationAmount = 50; // Food regenerates faster
+            } else if (node.type === 'ORE') {
+                regenerationAmount = 30; // Ore regenerates slower
+            }
+
+            // Check if node is within a claimed territory
+            const territory = this.getTerritoryContainingNode(node);
+            if (territory) {
+                // Apply territory regeneration bonus
+                regenerationAmount *= (1 + territory.benefits.regenerationBonus / 100);
+            }
+
+            // Apply season effects if available
+            if (this.weatherSystem) {
+                regenerationAmount *= this.weatherSystem.getResourceRegenerationModifier();
+            }
+
+            // Apply regeneration
+            node.amount = Math.min(1000, node.amount + Math.floor(regenerationAmount));
+        }
+
+        // Log regeneration
+        this.activityLogManager.addLogEntry(
+            'Resources',
+            'Resource nodes have regenerated some of their resources.'
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+    }
+
+    /**
+     * Apply territory maintenance costs
+     * @param {number} deltaTime - Time elapsed since last update in seconds
+     */
+    applyTerritoryMaintenanceCosts(deltaTime) {
+        const now = Date.now();
+        const oneMinute = 60 * 1000; // 1 minute in milliseconds
+
+        // Process each territory's maintenance costs
+        for (const territory of this.claimedTerritories) {
+            const maintenanceInfo = this.territoryMaintenanceCosts[territory.id];
+            if (!maintenanceInfo) continue;
+
+            // Check if it's time to collect maintenance
+            if (now - maintenanceInfo.lastCollected >= oneMinute) {
+                // Deduct maintenance costs
+                this.resources.FOOD = Math.max(0, this.resources.FOOD - maintenanceInfo.costs.FOOD);
+                this.resources.ORE = Math.max(0, this.resources.ORE - maintenanceInfo.costs.ORE);
+
+                // Update last collected time
+                maintenanceInfo.lastCollected = now;
+
+                // Log maintenance collection
+                this.activityLogManager.addLogEntry(
+                    'Territory',
+                    `Maintenance costs collected for territory at (${territory.x}, ${territory.y}): ${maintenanceInfo.costs.FOOD} Food, ${maintenanceInfo.costs.ORE} Ore`
+                );
+            }
+        }
+    }
+
+    /**
+     * Get the territory containing a specific node
+     * @param {Object} node - The resource node
+     * @returns {Object|null} - The territory containing the node, or null if not found
+     */
+    getTerritoryContainingNode(node) {
+        for (const territory of this.claimedTerritories) {
+            const distance = Math.sqrt(
+                Math.pow(node.x - territory.x, 2) +
+                Math.pow(node.y - territory.y, 2)
+            );
+
+            if (distance <= territory.radius) {
+                return territory;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a location is within claimed territory
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @returns {Object|null} - The territory containing the location, or null if not found
+     */
+    getTerritory(x, y) {
+        for (const territory of this.claimedTerritories) {
+            const distance = Math.sqrt(
+                Math.pow(x - territory.x, 2) +
+                Math.pow(y - territory.y, 2)
+            );
+
+            if (distance <= territory.radius) {
+                return territory;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if a location is within claimed territory
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @returns {boolean} - Whether the location is within claimed territory
+     */
+    isWithinClaimedTerritory(x, y) {
+        return this.getTerritory(x, y) !== null;
+    }
+
+    /**
+     * Build an outpost in a territory
+     * @param {string} outpostType - The type of outpost to build (OUTPOST, RESOURCE_STATION, GUARD_POST)
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate
+     * @returns {boolean} - Whether the outpost was built successfully
+     */
+    buildOutpost(outpostType, x, y) {
+        // Check if the location is within a claimed territory
+        const territory = this.getTerritory(x, y);
+        if (!territory) {
+            console.log('Cannot build outpost outside of claimed territory');
+            return false;
+        }
+
+        // Check if the outpost type is valid
+        if (!CONFIG.BUILDINGS[outpostType] || !CONFIG.BUILDINGS[outpostType].isOutpost) {
+            console.log('Invalid outpost type');
+            return false;
+        }
+
+        // Check if there's already an outpost at this location
+        const existingOutpost = this.outposts.find(outpost =>
+            outpost.x === x && outpost.y === y
+        );
+
+        if (existingOutpost) {
+            console.log('There is already an outpost at this location');
+            return false;
+        }
+
+        // Check requirements
+        const requirements = CONFIG.BUILDINGS[outpostType].requirements;
+        if (requirements) {
+            for (const [reqBuilding, reqLevel] of Object.entries(requirements)) {
+                // Check if the required building exists in the territory
+                const hasRequiredBuilding = territory.outposts.some(outpost =>
+                    outpost.type === reqBuilding && outpost.level >= reqLevel
+                );
+
+                if (!hasRequiredBuilding) {
+                    console.log(`Requires ${CONFIG.BUILDINGS[reqBuilding].name} level ${reqLevel}`);
+                    return false;
+                }
+            }
+        }
+
+        // Get the cost for level 1
+        const buildingConfig = CONFIG.BUILDINGS[outpostType];
+        const cost = buildingConfig.levels[0].cost;
+
+        // Check if we have enough resources
+        if (this.resources.FOOD < cost.FOOD || this.resources.ORE < cost.ORE) {
+            console.log('Not enough resources to build outpost');
+            return false;
+        }
+
+        // Deduct resources
+        this.resources.FOOD -= cost.FOOD;
+        this.resources.ORE -= cost.ORE;
+
+        // Create the outpost
+        const outpost = {
+            id: Date.now(),
+            type: outpostType,
+            name: buildingConfig.name,
+            x,
+            y,
+            level: 1,
+            territoryId: territory.id,
+            buildTime: buildingConfig.buildTime,
+            startTime: Date.now(),
+            completionTime: Date.now() + (buildingConfig.buildTime * 1000),
+            status: 'building'
+        };
+
+        // Add to outposts list
+        this.outposts.push(outpost);
+
+        // Add to territory outposts list
+        territory.outposts.push({
+            id: outpost.id,
+            type: outpostType,
+            level: 1
+        });
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Building',
+            `Started building ${buildingConfig.name} at (${x}, ${y})`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process outpost construction
+     */
+    processOutpostConstruction() {
+        const now = Date.now();
+        const completedOutposts = [];
+
+        for (const outpost of this.outposts) {
+            if (outpost.status === 'building' && now >= outpost.completionTime) {
+                // Outpost construction completed
+                outpost.status = 'completed';
+                completedOutposts.push(outpost);
+
+                // Find the territory
+                const territory = this.claimedTerritories.find(t => t.id === outpost.territoryId);
+                if (territory) {
+                    // Apply outpost benefits to territory
+                    this.applyOutpostBenefits(outpost, territory);
+                }
+
+                // Log completion
+                this.activityLogManager.addLogEntry(
+                    'Building',
+                    `${outpost.name} construction completed at (${outpost.x}, ${outpost.y})`
+                );
+            }
+        }
+
+        if (completedOutposts.length > 0) {
+            // Trigger UI update
+            this.onStateChange();
+        }
+    }
+
+    /**
+     * Apply outpost benefits to a territory
+     * @param {Object} outpost - The outpost
+     * @param {Object} territory - The territory
+     */
+    applyOutpostBenefits(outpost, territory) {
+        const buildingConfig = CONFIG.BUILDINGS[outpost.type];
+        const levelConfig = buildingConfig.levels[outpost.level - 1];
+
+        if (outpost.type === 'OUTPOST') {
+            territory.benefits.harvestingBonus += levelConfig.harvestingBonus;
+            territory.benefits.territoryBonus += levelConfig.territoryBonus;
+        } else if (outpost.type === 'RESOURCE_STATION') {
+            territory.benefits.resourceBonus += levelConfig.resourceBonus;
+            territory.benefits.regenerationBonus += levelConfig.regenerationBonus;
+        } else if (outpost.type === 'GUARD_POST') {
+            territory.benefits.defenseBonus += levelConfig.defenseBonus;
+            // Add guard units logic here if needed
+        }
+    }
+
+    /**
+     * Upgrade an outpost
+     * @param {number} outpostId - The ID of the outpost to upgrade
+     * @returns {boolean} - Whether the upgrade was started successfully
+     */
+    upgradeOutpost(outpostId) {
+        // Find the outpost
+        const outpost = this.outposts.find(o => o.id === outpostId);
+        if (!outpost) {
+            console.log('Outpost not found');
+            return false;
+        }
+
+        // Check if the outpost is already being upgraded
+        if (outpost.status === 'building' || outpost.status === 'upgrading') {
+            console.log('Outpost is already being upgraded');
+            return false;
+        }
+
+        // Check if the outpost is at max level
+        const buildingConfig = CONFIG.BUILDINGS[outpost.type];
+        if (outpost.level >= buildingConfig.levels.length) {
+            console.log('Outpost is already at max level');
+            return false;
+        }
+
+        // Get the cost for the next level
+        const nextLevel = outpost.level + 1;
+        const upgradeCost = buildingConfig.levels[nextLevel - 1].cost;
+
+        // Check if we have enough resources
+        if (this.resources.FOOD < upgradeCost.FOOD || this.resources.ORE < upgradeCost.ORE) {
+            console.log('Not enough resources to upgrade outpost');
+            return false;
+        }
+
+        // Deduct resources
+        this.resources.FOOD -= upgradeCost.FOOD;
+        this.resources.ORE -= upgradeCost.ORE;
+
+        // Set upgrade properties
+        outpost.status = 'upgrading';
+        outpost.startTime = Date.now();
+        outpost.completionTime = Date.now() + (buildingConfig.buildTime * nextLevel * 1000); // Longer time for higher levels
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Building',
+            `Started upgrading ${outpost.name} at (${outpost.x}, ${outpost.y}) to level ${nextLevel}`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process outpost upgrades
+     */
+    processOutpostUpgrades() {
+        const now = Date.now();
+        const upgradedOutposts = [];
+
+        for (const outpost of this.outposts) {
+            if (outpost.status === 'upgrading' && now >= outpost.completionTime) {
+                // Find the territory
+                const territory = this.claimedTerritories.find(t => t.id === outpost.territoryId);
+                if (territory) {
+                    // Remove old benefits
+                    this.removeOutpostBenefits(outpost, territory);
+                }
+
+                // Upgrade completed
+                outpost.level += 1;
+                outpost.status = 'completed';
+                upgradedOutposts.push(outpost);
+
+                // Update territory outpost record
+                if (territory) {
+                    const territoryOutpost = territory.outposts.find(o => o.id === outpost.id);
+                    if (territoryOutpost) {
+                        territoryOutpost.level = outpost.level;
+                    }
+
+                    // Apply new benefits
+                    this.applyOutpostBenefits(outpost, territory);
+                }
+
+                // Log completion
+                this.activityLogManager.addLogEntry(
+                    'Building',
+                    `${outpost.name} upgraded to level ${outpost.level} at (${outpost.x}, ${outpost.y})`
+                );
+            }
+        }
+
+        if (upgradedOutposts.length > 0) {
+            // Trigger UI update
+            this.onStateChange();
+        }
+    }
+
+    /**
+     * Remove outpost benefits from a territory
+     * @param {Object} outpost - The outpost
+     * @param {Object} territory - The territory
+     */
+    removeOutpostBenefits(outpost, territory) {
+        const buildingConfig = CONFIG.BUILDINGS[outpost.type];
+        const levelConfig = buildingConfig.levels[outpost.level - 1];
+
+        if (outpost.type === 'OUTPOST') {
+            territory.benefits.harvestingBonus -= levelConfig.harvestingBonus;
+            territory.benefits.territoryBonus -= levelConfig.territoryBonus;
+        } else if (outpost.type === 'RESOURCE_STATION') {
+            territory.benefits.resourceBonus -= levelConfig.resourceBonus;
+            territory.benefits.regenerationBonus -= levelConfig.regenerationBonus;
+        } else if (outpost.type === 'GUARD_POST') {
+            territory.benefits.defenseBonus -= levelConfig.defenseBonus;
+            // Remove guard units logic here if needed
+        }
+    }
+
+    /**
+     * Start a territory conflict with another player
+     * @param {number} territoryId - The ID of the territory to contest
+     * @param {Object} units - The units to send to the conflict {SPEARMAN: 0, ARCHER: 0, CAVALRY: 0, etc.}
+     * @param {string} playerId - The ID of the player to conflict with
+     * @returns {boolean} - Whether the conflict was started successfully
+     */
+    startTerritoryConflict(territoryId, units, playerId) {
+        // Find the territory
+        const territory = this.claimedTerritories.find(t => t.id === territoryId);
+        if (!territory) {
+            console.log('Territory not found');
+            return false;
+        }
+
+        // Check if we have enough units
+        for (const [unitType, count] of Object.entries(units)) {
+            if (count > this.units[unitType]) {
+                console.log(`Not enough ${unitType} units`);
+                return false;
+            }
+        }
+
+        // Check if any units are being sent
+        const totalUnits = Object.values(units).reduce((sum, count) => sum + count, 0);
+        if (totalUnits <= 0) {
+            console.log('No units selected for conflict');
+            return false;
+        }
+
+        // Check diplomatic relations
+        const relation = this.diplomaticRelations.find(r => r.playerId === playerId);
+        if (relation && relation.status === 'ALLIANCE') {
+            console.log('Cannot start conflict with an ally');
+            return false;
+        }
+
+        // Remove units from player's army
+        for (const [unitType, count] of Object.entries(units)) {
+            this.units[unitType] -= count;
+        }
+
+        // Create conflict
+        const conflict = {
+            id: Date.now(),
+            territoryId,
+            targetPlayerId: playerId,
+            units: { ...units },
+            status: 'active',
+            startTime: Date.now(),
+            duration: 300 * 1000, // 5 minutes in milliseconds
+            completionTime: Date.now() + (300 * 1000),
+            progress: 0,
+            outcome: null
+        };
+
+        this.territoryConflicts.push(conflict);
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Conflict',
+            `Started territory conflict for territory at (${territory.x}, ${territory.y})`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process territory conflicts
+     * @param {number} deltaTime - Time elapsed since last update in seconds
+     */
+    processTerritoryConflicts(deltaTime) {
+        if (this.territoryConflicts.length === 0) return;
+
+        const now = Date.now();
+        const completedConflicts = [];
+
+        for (const conflict of this.territoryConflicts) {
+            if (conflict.status === 'active') {
+                // Update progress
+                const elapsed = now - conflict.startTime;
+                const total = conflict.duration;
+                conflict.progress = Math.min(100, (elapsed / total) * 100);
+
+                // Check if conflict is complete
+                if (now >= conflict.completionTime) {
+                    // Determine outcome
+                    this.resolveConflict(conflict);
+                    completedConflicts.push(conflict);
+                }
+            }
+        }
+
+        // Remove completed conflicts
+        if (completedConflicts.length > 0) {
+            this.territoryConflicts = this.territoryConflicts.filter(
+                c => !completedConflicts.includes(c)
+            );
+
+            // Trigger UI update
+            this.onStateChange();
+        }
+    }
+
+    /**
+     * Resolve a territory conflict
+     * @param {Object} conflict - The conflict to resolve
+     */
+    resolveConflict(conflict) {
+        // For now, just use a simple random outcome with weighted probability
+        // In a real game, this would involve complex battle calculations
+
+        // Calculate total unit strength
+        let totalStrength = 0;
+        for (const [unitType, count] of Object.entries(conflict.units)) {
+            const unitConfig = CONFIG.UNITS[unitType];
+            const attackValue = unitConfig.stats.attack;
+            const defenseValue = unitConfig.stats.defense;
+
+            // Use specialized units' bonuses if applicable
+            let bonus = 1.0;
+            if (unitType === 'DEFENDER' && unitConfig.isSpecialized) {
+                bonus += unitConfig.territoryDefenseBonus / 100;
+            }
+
+            totalStrength += count * (attackValue + defenseValue) * bonus;
+        }
+
+        // Simulate enemy strength (would be based on actual enemy data in a real game)
+        const enemyStrength = Math.random() * 100 + 50; // Random value between 50 and 150
+
+        // Determine outcome
+        const winProbability = totalStrength / (totalStrength + enemyStrength);
+        const isVictory = Math.random() < winProbability;
+
+        conflict.status = 'completed';
+        conflict.outcome = isVictory ? 'victory' : 'defeat';
+
+        // Apply outcome effects
+        if (isVictory) {
+            // Find the territory
+            const territory = this.claimedTerritories.find(t => t.id === conflict.territoryId);
+            if (territory) {
+                // Transfer territory ownership (in a real game, this would involve more complex logic)
+                territory.owner = this.playerId;
+
+                // Return some units (casualties would be calculated in a real game)
+                const casualtyRate = 0.3; // 30% casualties
+                for (const [unitType, count] of Object.entries(conflict.units)) {
+                    const survivingUnits = Math.floor(count * (1 - casualtyRate));
+                    this.units[unitType] += survivingUnits;
+                }
+
+                // Log victory
+                this.activityLogManager.addLogEntry(
+                    'Conflict',
+                    `Victory in territory conflict for territory at (${territory.x}, ${territory.y})`
+                );
+            }
+        } else {
+            // In case of defeat, units are lost
+            // Log defeat
+            const territory = this.claimedTerritories.find(t => t.id === conflict.territoryId);
+            if (territory) {
+                this.activityLogManager.addLogEntry(
+                    'Conflict',
+                    `Defeat in territory conflict for territory at (${territory.x}, ${territory.y})`
+                );
+            } else {
+                this.activityLogManager.addLogEntry(
+                    'Conflict',
+                    `Defeat in territory conflict`
+                );
+            }
+        }
+    }
+
+    /**
+     * Establish a diplomatic relation with another player
+     * @param {string} playerId - The ID of the player to establish relations with
+     * @param {string} status - The status of the relation (NEUTRAL, ALLIANCE, WAR)
+     * @returns {boolean} - Whether the relation was established successfully
+     */
+    establishDiplomaticRelation(playerId, status) {
+        // Check if relation already exists
+        const existingRelation = this.diplomaticRelations.find(r => r.playerId === playerId);
+
+        if (existingRelation) {
+            // Update existing relation
+            existingRelation.status = status;
+            existingRelation.lastUpdated = Date.now();
+        } else {
+            // Create new relation
+            const relation = {
+                playerId,
+                status,
+                established: Date.now(),
+                lastUpdated: Date.now(),
+                favorLevel: 50 // Neutral favor level (0-100)
+            };
+
+            this.diplomaticRelations.push(relation);
+        }
+
+        // Apply diplomatic bonuses from specialized units
+        if (this.specializedUnits.DIPLOMAT && this.specializedUnits.DIPLOMAT > 0) {
+            const diplomatConfig = CONFIG.UNITS.DIPLOMAT;
+            if (diplomatConfig.isSpecialized) {
+                // Apply diplomatic influence bonus
+                const relation = this.diplomaticRelations.find(r => r.playerId === playerId);
+                if (relation) {
+                    const influenceBonus = diplomatConfig.diplomaticInfluence * this.specializedUnits.DIPLOMAT;
+                    relation.favorLevel = Math.min(100, relation.favorLevel + influenceBonus);
+                }
+            }
+        }
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Diplomacy',
+            `Established ${status} relation with player ${playerId}`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
+    }
+
+    /**
+     * Process diplomatic relations
+     * @param {number} deltaTime - Time elapsed since last update in seconds
+     */
+    processDiplomaticRelations(deltaTime) {
+        if (this.diplomaticRelations.length === 0) return;
+
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+        // In a real game, this would involve complex diplomatic calculations
+        // For now, just decay favor level over time for non-alliance relations
+        for (const relation of this.diplomaticRelations) {
+            if (relation.status !== 'ALLIANCE') {
+                // Check if it's been at least a day since last update
+                if (now - relation.lastUpdated >= oneDay) {
+                    // Decay favor level
+                    relation.favorLevel = Math.max(0, relation.favorLevel - 5);
+                    relation.lastUpdated = now;
+
+                    // Log significant changes
+                    if (relation.favorLevel <= 20 && relation.status !== 'WAR') {
+                        relation.status = 'WAR';
+                        this.activityLogManager.addLogEntry(
+                            'Diplomacy',
+                            `Relations with player ${relation.playerId} have deteriorated to WAR`
+                        );
+                    } else if (relation.favorLevel >= 80 && relation.status !== 'ALLIANCE') {
+                        relation.status = 'ALLIANCE';
+                        this.activityLogManager.addLogEntry(
+                            'Diplomacy',
+                            `Relations with player ${relation.playerId} have improved to ALLIANCE`
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Train specialized units
+     * @param {string} unitType - The type of specialized unit to train
+     * @param {number} count - The number of units to train
+     * @returns {boolean} - Whether the training was started successfully
+     */
+    trainSpecializedUnit(unitType, count) {
+        // Check if the unit type is valid and specialized
+        const unitConfig = CONFIG.UNITS[unitType];
+        if (!unitConfig || !unitConfig.isSpecialized) {
+            console.log('Invalid specialized unit type');
+            return false;
+        }
+
+        // Check if we have enough resources
+        const totalCost = {
+            FOOD: unitConfig.cost.FOOD * count,
+            ORE: unitConfig.cost.ORE * count
+        };
+
+        if (this.resources.FOOD < totalCost.FOOD || this.resources.ORE < totalCost.ORE) {
+            console.log('Not enough resources to train specialized units');
+            return false;
+        }
+
+        // Deduct resources
+        this.resources.FOOD -= totalCost.FOOD;
+        this.resources.ORE -= totalCost.ORE;
+
+        // Add to training queue
+        const trainingTime = 20; // seconds per unit
+
+        const trainingItem = {
+            type: unitType,
+            count: count,
+            timeRemaining: trainingTime * count,
+            totalTime: trainingTime * count
+        };
+
+        this.trainingQueue.push(trainingItem);
+
+        // Initialize specialized units tracking if needed
+        if (!this.specializedUnits[unitType]) {
+            this.specializedUnits[unitType] = 0;
+        }
+
+        // Log the action
+        this.activityLogManager.addLogEntry(
+            'Training',
+            `Started training ${count} ${unitConfig.name} units`
+        );
+
+        // Trigger UI update
+        this.onStateChange();
+        return true;
     }
 
     /**

@@ -30,9 +30,11 @@
                     </div>
                 </div>
                 <div id="game-controls">
+                    <button id="chat-button" class="control-button chat-button">Chat</button>
                     <button id="save-button" class="control-button">Save</button>
                     <button id="load-button" class="control-button">Load</button>
-                    <button id="cheat-button" class="control-button cheat-button">Test Mode (999999 Resources)</button>
+                    <button id="speed-button" class="control-button speed-button">Speed: 1.0x</button>
+                    <button id="cheat-button" class="control-button cheat-button">Test Mode (Unlimited Resources)</button>
                 </div>
             </div>
         </header>
@@ -46,6 +48,7 @@
                         <button id="zoom-out" class="map-button">-</button>
                         <button id="reset-zoom" class="map-button">Reset</button>
                         <button id="center-map" class="map-button">Center</button>
+                        <button id="claim-territory" class="map-button claim-button">Claim Territory</button>
                     </div>
                 </div>
                 <div id="map-wrapper">
@@ -61,78 +64,135 @@
 
             <div id="game-content">
                 <!-- Single scrollable page layout as per user preference -->
-                <div id="player-base" class="game-section">
+                <div id="empire-section" class="game-section">
                     <div class="section-header">
                         <h3>Your Empire</h3>
                     </div>
-                    <div id="buildings-grid">
-                        <!-- Buildings will be rendered here -->
-                    </div>
-                </div>
 
-                <div id="building-controls" class="game-section">
-                    <div class="section-header">
-                        <h3>Buildings</h3>
-                    </div>
-                    <div id="building-buttons">
-                        <!-- Building buttons will be generated here -->
-                    </div>
-                </div>
-
-                <div id="unit-controls" class="game-section">
-                    <div class="section-header">
-                        <h3>Units</h3>
-                    </div>
-                    <div id="unit-stats">
-                        <div class="unit-stat">
-                            <div class="unit-icon spearman">S</div>
-                            <span id="spearman-count">0</span>
-                        </div>
-                        <div class="unit-stat">
-                            <div class="unit-icon archer">A</div>
-                            <span id="archer-count">0</span>
-                        </div>
-                        <div class="unit-stat">
-                            <div class="unit-icon cavalry">C</div>
-                            <span id="cavalry-count">0</span>
+                    <!-- Empire Overview - Always visible -->
+                    <div id="empire-overview">
+                        <div id="unit-stats">
+                            <div class="unit-stat">
+                                <div class="unit-icon spearman">S</div>
+                                <span id="spearman-count">0</span>
+                            </div>
+                            <div class="unit-stat">
+                                <div class="unit-icon archer">A</div>
+                                <span id="archer-count">0</span>
+                            </div>
+                            <div class="unit-stat">
+                                <div class="unit-icon cavalry">C</div>
+                                <span id="cavalry-count">0</span>
+                            </div>
+                            <div id="unit-upkeep" class="unit-upkeep">
+                                <div class="upkeep-icon food-icon">F</div>
+                                <span>Upkeep: <span id="food-upkeep">0</span>/min</span>
+                            </div>
                         </div>
                     </div>
-                    <div id="unit-upkeep" class="unit-upkeep">
-                        <div class="upkeep-icon food-icon">F</div>
-                        <span>Food Upkeep: <span id="food-upkeep">0</span>/min</span>
-                    </div>
-                    <div id="training-controls">
-                        <!-- Training controls will be generated here -->
-                    </div>
-                </div>
 
-                <div id="combat-controls" class="game-section">
-                    <div class="section-header">
-                        <h3>Combat</h3>
+                    <!-- Empire Tabs Navigation -->
+                    <div id="empire-tabs">
+                        <button class="empire-tab-button active" data-tab="buildings"><div class="tab-icon buildings"></div>Buildings</button>
+                        <button class="empire-tab-button" data-tab="military"><div class="tab-icon military"></div>Military</button>
+                        <button class="empire-tab-button" data-tab="research"><div class="tab-icon research"></div>Research</button>
+                        <button class="empire-tab-button" data-tab="diplomacy"><div class="tab-icon diplomacy"></div>Diplomacy</button>
+                        <button class="empire-tab-button" data-tab="reports"><div class="tab-icon reports"></div>Reports</button>
                     </div>
-                    <button id="attack-button" disabled>Attack</button>
-                    <div id="combat-reports">
-                        <!-- Combat reports will be displayed here -->
-                    </div>
-                </div>
 
-                <div id="research-controls" class="game-section">
-                    <div class="section-header">
-                        <h3>Research</h3>
-                    </div>
-                    <div id="research-status">
-                        <div id="current-research">No research in progress</div>
-                        <div id="research-progress-container" class="progress-container">
-                            <div id="research-progress-bar" class="progress-bar"></div>
+                    <!-- Tab Content -->
+                    <div id="empire-tab-content">
+                        <!-- Buildings Tab -->
+                        <div id="buildings-tab" class="tab-content active">
+                            <div class="tab-section">
+                                <h4>City Buildings</h4>
+                                <div id="buildings-grid">
+                                    <!-- Buildings will be rendered here -->
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Construction</h4>
+                                <div id="building-buttons">
+                                    <!-- Building buttons will be generated here -->
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div id="research-tabs">
-                        <button class="research-tab-button active" data-category="MILITARY">Military</button>
-                        <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
-                        <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
-                    </div>
-                    <div id="research-options">
-                        <!-- Research options will be generated here -->
+
+                        <!-- Military Tab -->
+                        <div id="military-tab" class="tab-content">
+                            <div class="tab-section">
+                                <h4>Training</h4>
+                                <div id="training-controls">
+                                    <!-- Training controls will be generated here -->
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Combat</h4>
+                                <button id="attack-button" disabled>Attack Enemy</button>
+                            </div>
+                        </div>
+
+                        <!-- Research Tab -->
+                        <div id="research-tab" class="tab-content">
+                            <div class="tab-section">
+                                <h4>Current Research</h4>
+                                <div id="research-status">
+                                    <div id="current-research">No research in progress</div>
+                                    <div id="research-progress-container" class="progress-container">
+                                        <div id="research-progress-bar" class="progress-bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Research Projects</h4>
+                                <div id="research-tabs">
+                                    <button class="research-tab-button active" data-category="MILITARY">Military</button>
+                                    <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
+                                    <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
+                                    <button class="research-tab-button" data-category="DIPLOMATIC">Diplomatic</button>
+                                    <button class="research-tab-button" data-category="EXPLORATION">Exploration</button>
+                                </div>
+                                <div id="research-options">
+                                    <!-- Research options will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diplomacy Tab -->
+                        <div id="diplomacy-tab" class="tab-content">
+                            <div class="tab-section">
+                                <h4>Diplomatic Relations</h4>
+                                <div id="diplomatic-relations">
+                                    <!-- Diplomatic relations will be displayed here -->
+                                    <div class="no-relations-message">No diplomatic relations established yet.</div>
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Available Factions</h4>
+                                <div id="available-factions">
+                                    <!-- Available factions will be displayed here -->
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Diplomatic Actions</h4>
+                                <div id="diplomatic-actions">
+                                    <button id="establish-relations-button" class="diplomatic-button" disabled>Establish Relations</button>
+                                    <button id="propose-alliance-button" class="diplomatic-button" disabled>Propose Alliance</button>
+                                    <button id="declare-war-button" class="diplomatic-button" disabled>Declare War</button>
+                                    <button id="send-emissary-button" class="diplomatic-button" disabled>Send Emissary</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports Tab -->
+                        <div id="reports-tab" class="tab-content">
+                            <div class="tab-section">
+                                <h4>Combat Reports</h4>
+                                <div id="combat-reports">
+                                    <!-- Combat reports will be displayed here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -179,6 +239,54 @@
                 <div id="save-slot-container">
                     <!-- Save slots will be dynamically generated -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Territory Claim Modal -->
+        <div id="territory-modal" class="modal">
+            <div id="territory-modal-content" class="modal-content">
+                <span id="territory-modal-close" class="close-button">&times;</span>
+                <h3>Claim Territory</h3>
+
+                <div class="territory-info">
+                    <p>Claiming territory allows you to expand your empire and secure resources. Larger territories cost more resources to claim and maintain.</p>
+                </div>
+
+                <form id="territory-form" class="territory-form">
+                    <div class="territory-selection">
+                        <label for="territory-radius">Territory Radius:</label>
+                        <div class="territory-input-group">
+                            <input type="range" id="territory-radius" min="1" max="5" value="2" step="1">
+                            <span id="radius-display">2 tiles</span>
+                        </div>
+                    </div>
+
+                    <div class="territory-cost">
+                        <h4>Cost to Claim</h4>
+                        <div class="cost-display">
+                            <div class="cost-item">
+                                <img src="assets/icons/food.png" alt="Food" class="resource-icon">
+                                <span id="territory-food-cost">200</span>
+                            </div>
+                            <div class="cost-item">
+                                <img src="assets/icons/ore.png" alt="Ore" class="resource-icon">
+                                <span id="territory-ore-cost">300</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="territory-benefits">
+                        <h4>Benefits</h4>
+                        <ul>
+                            <li>Secure resources within the territory</li>
+                            <li>Prevent enemy camps from spawning</li>
+                            <li>Faster resource harvesting</li>
+                            <li>Ability to build outposts (coming soon)</li>
+                        </ul>
+                    </div>
+
+                    <button type="button" id="claim-territory-button" class="claim-territory-button">Claim Territory</button>
+                </form>
             </div>
         </div>
 
@@ -276,6 +384,29 @@
         </div>
     </div>
 
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="modal">
+        <div id="chat-modal-content" class="modal-content">
+            <span id="chat-modal-close" class="close-button">&times;</span>
+            <h3>Chat</h3>
+            <div id="chat-container">
+                <div id="chat-channels">
+                    <button class="chat-channel-button active" data-channel="global">Global</button>
+                    <button class="chat-channel-button" data-channel="faction">Faction</button>
+                    <button class="chat-channel-button" data-channel="private">Private</button>
+                </div>
+                <div id="chat-messages">
+                    <!-- Chat messages will be displayed here -->
+                    <div class="system-message">Welcome to Pixel Empires chat! Select a channel to start chatting.</div>
+                </div>
+                <div id="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Type your message here..." />
+                    <button id="chat-send-button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Game scripts -->
     <script src="scripts/asset-loader.js"></script>
     <script src="scripts/config.js"></script>
@@ -285,6 +416,10 @@
     <script src="scripts/save-system.js"></script>
     <script src="scripts/animations.js"></script>
     <script src="scripts/unit-animations.js"></script>
+    <script src="scripts/weatherSystem.js"></script>
+    <script src="scripts/tradeSystem.js"></script>
+    <script src="scripts/combatSystem.js"></script>
+    <script src="scripts/questSystem.js"></script>
     <script src="scripts/gameState.js"></script>
     <script src="scripts/challenges.js"></script>
     <script src="scripts/buildings.js"></script>
@@ -295,6 +430,8 @@
     <script src="scripts/combat-ui.js"></script>
     <script src="scripts/events-ui.js"></script>
     <script src="scripts/save-ui.js"></script>
+    <script src="scripts/diplomacy-ui.js"></script>
+    <script src="scripts/chat-system.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

@@ -22,6 +22,10 @@ const combatUI = new CombatUI(gameState, combatManager);
 // Initialize events UI
 const eventsUI = new EventsUI(gameState, gameState.eventManager);
 
+// Initialize chat system
+const chatSystem = new ChatSystem(gameState);
+const chatUI = new ChatUI(chatSystem);
+
 // Game loop
 function gameLoop() {
     // Update game state
