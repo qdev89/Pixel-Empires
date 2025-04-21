@@ -59,35 +59,60 @@ Pixel Empires is a retro pixel art strategy game with a build & raid loop. The g
 - Implemented chat system with multiple channels (global, faction, private)
 - Added notification system for important events
 
-### Phase 8: Enhanced Map Features (In Progress)
-- Adding more terrain types and features
-- Implementing fog of war for unexplored areas
-- Adding special locations and points of interest
-- Creating a more detailed minimap
+### Phase 8: Enhanced Map Features (Completed)
+- Added more terrain types and features
+- Implemented fog of war for unexplored areas
+- Added special locations and points of interest
+- Created a more detailed minimap
+- Implemented territory claiming system
 
-### Phase 9: Hero System (Planned)
-- Hero units with special abilities
-- Hero progression and skill trees
-- Hero equipment and inventory
-- Hero-specific quests and missions
+### Phase 9: Hero System (Completed)
+- Added hero units with special abilities
+- Implemented hero progression and skill trees
+- Created hero equipment and inventory system
+- Developed hero-specific quests and missions
+- Added hero specializations and traits
+- Implemented hero equipment sets with bonuses
 
-### Phase 10: Advanced Combat System (Planned)
-- More unit types and formations
-- Detailed battle visualization
-- Terrain and weather combat bonuses
-- Siege weapons and defensive structures
+### Phase 10: Advanced Combat System (Completed)
+- Added more unit types and formations
+- Implemented detailed battle visualization
+- Added terrain and weather effects on combat
+- Created unit experience and morale system
+- Implemented formation-specific bonuses and tactics
+- Added combat UI enhancements with tactical information
 
-### Phase 11: Economy Expansion (Planned)
+### Phase 11: Diplomacy and Alliance System (In Progress)
+- Enhancing diplomatic relations with other factions
+- Implementing alliance mechanics and benefits
+- Adding diplomatic missions and envoys
+- Creating faction reputation system
+- Implementing trade agreements and non-aggression pacts
+- Developing diplomatic UI enhancements
+
+### Phase 12: Economy Expansion (Planned)
 - Advanced trade routes and markets
 - Resource refinement and processing
 - Luxury goods and special resources
 - Economic policies and taxation
+- Trade caravans and merchant units
+- Economic buildings and improvements
 
-### Phase 12: Multiplayer Features (Planned)
+### Phase 13: World Events and Seasons (Planned)
+- Dynamic world events system
+- Seasonal changes affecting gameplay
+- Natural disasters and opportunities
+- Special limited-time events
+- Festival and celebration events
+- Season-specific resources and bonuses
+
+### Phase 14: Multiplayer Features (Planned)
 - Player vs Player combat
 - Leaderboards and rankings
 - Synchronized game state
 - Anti-cheat measures
+- Multiplayer alliances and diplomacy
+- Real-time chat and coordination
 
 ## Technical Architecture
 
@@ -188,53 +213,91 @@ Pixel Empires is a retro pixel art strategy game with a build & raid loop. The g
 - Chat system with multiple channels
 - Notification system
 
-### Milestone 8: Enhanced Map Features (In Progress)
+### Milestone 8: Enhanced Map Features (Completed)
 - More terrain types
 - Fog of war system
 - Special locations and points of interest
 - Detailed minimap
+- Territory claiming system
 
-### Milestone 9: Hero System (Planned)
+### Milestone 9: Hero System (Completed)
 - Hero units with special abilities
 - Hero progression and skill trees
 - Hero equipment and inventory
 - Hero-specific quests
+- Hero specializations and traits
+- Hero equipment sets with bonuses
 
-### Milestone 10: Advanced Combat (Planned)
+### Milestone 10: Advanced Combat (Completed)
 - More unit types and formations
 - Detailed battle visualization
 - Terrain and weather combat bonuses
-- Siege weapons and defensive structures
+- Unit experience and morale system
+- Formation-specific bonuses and tactics
+- Combat UI enhancements
 
-### Milestone 11: Economy Expansion (Planned)
+### Milestone 11: Diplomacy and Alliance System (In Progress)
+- Enhanced diplomatic relations
+- Alliance mechanics and benefits
+- Diplomatic missions and envoys
+- Faction reputation system
+- Trade agreements and non-aggression pacts
+- Diplomatic UI enhancements
+
+### Milestone 12: Economy Expansion (Planned)
 - Advanced trade routes and markets
 - Resource refinement and processing
 - Luxury goods and special resources
 - Economic policies and taxation
+- Trade caravans and merchant units
+- Economic buildings and improvements
+
+### Milestone 13: World Events and Seasons (Planned)
+- Dynamic world events system
+- Seasonal changes affecting gameplay
+- Natural disasters and opportunities
+- Special limited-time events
+- Festival and celebration events
+- Season-specific resources and bonuses
 
 ## Current Status
 
-The project is currently in Phase 8 (Enhanced Map Features), with the research system, enhanced combat system, animation system, diplomacy interface, and chat system completed. We have successfully implemented a comprehensive diplomacy system that allows players to establish relations with other factions, form alliances, and declare war. We've also added a multi-channel chat system with global, faction, and private messaging capabilities.
+The project is currently in Phase 11 (Diplomacy and Alliance System), with significant progress made across multiple game systems. We have successfully completed the following major phases:
 
-The current focus is on enhancing the map system with more terrain types, a fog of war system for unexplored areas, special locations and points of interest, and a more detailed minimap. These enhancements will make the game world more immersive and strategic for players.
+- **Enhanced Map Features**: Added more terrain types, implemented fog of war, created special locations, and developed a detailed minimap with territory claiming.
+
+- **Hero System**: Implemented hero units with special abilities, progression, equipment, quests, specializations, and traits.
+
+- **Advanced Combat System**: Added unit formations, terrain and weather effects on combat, unit experience and morale system, and enhanced combat UI.
+
+The current focus is on enhancing the diplomacy and alliance system with more detailed diplomatic relations, alliance mechanics, diplomatic missions, and a faction reputation system. These enhancements will provide players with more strategic options for interacting with other factions beyond simple warfare.
 
 ## Future Considerations
 
-- Mobile-friendly version
-- Localization for multiple languages
-- Seasonal events and special challenges
-- Premium features or monetization options
-- Community tools and modding support
+### Short-term Priorities
 - Advanced AI for more challenging NPC opponents
-- Additional unit types and buildings
-- Campaign mode with storyline
-- Achievement system
-- World events system with natural disasters and opportunities
-- NPC faction wars and migrations
-- Special limited-time events
+- Additional unit types and specialized buildings
+- Achievement system implementation
 - Performance optimization for large maps
 - Multiple save slots and auto-save functionality
+- Balancing existing game systems
+
+### Medium-term Goals
+- Campaign mode with storyline
+- NPC faction wars and migrations
+- Localization for multiple languages
+- Community tools and modding support
+- Advanced tutorial system
+- UI/UX improvements based on player feedback
+
+### Long-term Vision
+- Mobile-friendly version
+- Premium features or monetization options
 - Real-time multiplayer with synchronized game state
+- Cross-platform play
+- Procedurally generated maps and challenges
+- Competitive gameplay modes
+- Clan/guild system for multiplayer
 
 ## Testing Strategy
 
@@ -243,24 +306,34 @@ The current focus is on enhancing the map system with more terrain types, a fog 
 - Test button for unlimited resources to facilitate testing
 - Automated unit tests for core game mechanics
 - Cross-browser compatibility testing
+- Incremental testing of new features
 
 ### Playtesting
 - Regular playtesting sessions with team members
 - External playtesting with target audience
 - Feedback collection and implementation
 - Balance testing for game mechanics
+- A/B testing for UI improvements
 
 ### Performance Testing
 - Benchmarking for different device capabilities
 - Memory usage monitoring for long gameplay sessions
 - Load testing for multiplayer features
 - Optimization based on performance metrics
+- Frame rate monitoring for animations
 
 ### Quality Assurance
 - Bug tracking and resolution system
 - Regression testing after major updates
 - Compatibility testing across different devices
 - User experience evaluation
+- Accessibility testing
+
+### System Integration Testing
+- Testing interactions between different game systems
+- Ensuring new features work with existing systems
+- Edge case testing for complex interactions
+- Stress testing with maximum game state complexity
 
 ## Design Principles
 
@@ -270,6 +343,7 @@ The current focus is on enhancing the map system with more terrain types, a fog 
 - Readable font sizes for all text elements
 - Consistent color scheme and iconography
 - Visual feedback for all player actions
+- Animations that enhance understanding without being distracting
 
 ### User Interface
 - All content on one scrollable page
@@ -277,6 +351,7 @@ The current focus is on enhancing the map system with more terrain types, a fog 
 - Minimal clicks required for common actions
 - Responsive design that adapts to different screen sizes
 - Consistent placement of UI elements
+- Tooltips and contextual help for complex features
 
 ### Gameplay
 - Real-time gameplay instead of turn-based
@@ -284,6 +359,7 @@ The current focus is on enhancing the map system with more terrain types, a fog 
 - Multiple viable strategies for success
 - Clear goals and feedback on progress
 - Meaningful choices with strategic impact
+- Depth through system interactions rather than complexity
 
 ### Accessibility
 - Configurable UI scaling
@@ -291,3 +367,12 @@ The current focus is on enhancing the map system with more terrain types, a fog 
 - Keyboard shortcuts for common actions
 - Clear tutorial and help system
 - Adjustable game speed
+- Text alternatives for visual information
+
+### System Design
+- Modular code architecture for maintainability
+- Clear separation of concerns between systems
+- Event-driven communication between components
+- Consistent naming conventions and code style
+- Performance optimization for critical systems
+- Extensible design for future features

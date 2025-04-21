@@ -317,6 +317,11 @@ const CONFIG = {
         CAMP_RESPAWN_TIME: 300, // seconds until a defeated camp respawns (5 minutes)
         COMBAT_VISUALIZATION_TIME: 10, // seconds to visualize combat
 
+        // Hero combat settings
+        HERO_STRENGTH_MULTIPLIER: 5.0, // Heroes are 5x stronger than regular units
+        HERO_ABILITY_COOLDOWN: 3,      // Cooldown between hero ability uses (in seconds)
+        HERO_MAX_ABILITIES_PER_COMBAT: 2, // Maximum number of abilities a hero can use in a single combat
+
         // Terrain effects on combat
         TERRAIN_EFFECTS: {
             grass: {
@@ -324,28 +329,119 @@ const CONFIG = {
                 description: "Open terrain with no special effects",
                 attack: 1.0,
                 defense: 1.0,
-                movementSpeed: 1.0
+                movementSpeed: 1.0,
+                unitAdvantages: {
+                    CAVALRY: 1.2 // Cavalry gets 20% bonus on grassland
+                },
+                visualEffect: "none",
+                ambushChance: 0.05 // 5% chance of ambush
             },
             forest: {
                 name: "Forest",
                 description: "Provides cover for defenders and archers",
                 attack: 0.9,
                 defense: 1.2,
-                movementSpeed: 0.8
+                movementSpeed: 0.8,
+                unitAdvantages: {
+                    ARCHER: 1.15, // Archers get 15% bonus in forests
+                    SCOUT: 1.1 // Scouts get 10% bonus in forests
+                },
+                unitDisadvantages: {
+                    CAVALRY: 0.8 // Cavalry gets 20% penalty in forests
+                },
+                visualEffect: "forest_cover",
+                ambushChance: 0.15 // 15% chance of ambush
             },
             mountain: {
                 name: "Mountain",
                 description: "Difficult terrain that favors defenders",
                 attack: 0.7,
                 defense: 1.4,
-                movementSpeed: 0.6
+                movementSpeed: 0.6,
+                unitAdvantages: {
+                    DEFENDER: 1.3 // Defenders get 30% bonus in mountains
+                },
+                unitDisadvantages: {
+                    CAVALRY: 0.7, // Cavalry gets 30% penalty in mountains
+                    SPEARMAN: 0.9 // Spearmen get 10% penalty in mountains
+                },
+                visualEffect: "high_ground",
+                ambushChance: 0.1 // 10% chance of ambush
             },
             water: {
                 name: "Water",
                 description: "Crossing water is difficult without proper technology",
                 attack: 0.6,
                 defense: 0.8,
-                movementSpeed: 0.4
+                movementSpeed: 0.4,
+                unitAdvantages: {},
+                unitDisadvantages: {
+                    SPEARMAN: 0.7, // Spearmen get 30% penalty in water
+                    ARCHER: 0.8, // Archers get 20% penalty in water
+                    CAVALRY: 0.6 // Cavalry gets 40% penalty in water
+                },
+                visualEffect: "water_splash",
+                ambushChance: 0.0 // No ambush in water
+            },
+            desert: {
+                name: "Desert",
+                description: "Hot, dry terrain that drains stamina",
+                attack: 0.8,
+                defense: 0.9,
+                movementSpeed: 0.7,
+                unitAdvantages: {
+                    SCOUT: 1.2 // Scouts get 20% bonus in desert
+                },
+                unitDisadvantages: {
+                    SPEARMAN: 0.9, // Spearmen get 10% penalty in desert
+                    DEFENDER: 0.8 // Defenders get 20% penalty in desert
+                },
+                visualEffect: "heat_haze",
+                ambushChance: 0.05 // 5% chance of ambush
+            },
+            swamp: {
+                name: "Swamp",
+                description: "Muddy terrain that slows movement and reduces combat effectiveness",
+                attack: 0.7,
+                defense: 0.8,
+                movementSpeed: 0.5,
+                unitAdvantages: {},
+                unitDisadvantages: {
+                    CAVALRY: 0.6, // Cavalry gets 40% penalty in swamp
+                    SPEARMAN: 0.8, // Spearmen get 20% penalty in swamp
+                    ARCHER: 0.9 // Archers get 10% penalty in swamp
+                },
+                visualEffect: "mud_splash",
+                ambushChance: 0.2 // 20% chance of ambush
+            },
+            hills: {
+                name: "Hills",
+                description: "Elevated terrain that provides tactical advantages",
+                attack: 0.9,
+                defense: 1.2,
+                movementSpeed: 0.8,
+                unitAdvantages: {
+                    ARCHER: 1.25 // Archers get 25% bonus in hills
+                },
+                unitDisadvantages: {
+                    CAVALRY: 0.9 // Cavalry gets 10% penalty in hills
+                },
+                visualEffect: "elevated_position",
+                ambushChance: 0.1 // 10% chance of ambush
+            },
+            plains: {
+                name: "Plains",
+                description: "Wide open terrain ideal for large-scale battles",
+                attack: 1.1,
+                defense: 0.9,
+                movementSpeed: 1.1,
+                unitAdvantages: {
+                    CAVALRY: 1.3, // Cavalry gets 30% bonus on plains
+                    SPEARMAN: 1.1 // Spearmen get 10% bonus on plains
+                },
+                unitDisadvantages: {},
+                visualEffect: "open_field",
+                ambushChance: 0.0 // No ambush on plains
             }
         },
 
@@ -356,28 +452,200 @@ const CONFIG = {
                 description: "Equal distribution of attack and defense",
                 attack: 1.0,
                 defense: 1.0,
-                casualtyRate: 1.0
+                casualtyRate: 1.0,
+                unitBonuses: {},
+                terrainAdvantages: [],
+                specialEffects: [],
+                icon: "⚖️",
+                visualEffect: "balanced_formation"
             },
             aggressive: {
                 name: "Aggressive",
                 description: "+30% attack, -30% defense, +20% casualties",
                 attack: 1.3,
                 defense: 0.7,
-                casualtyRate: 1.2
+                casualtyRate: 1.2,
+                unitBonuses: {
+                    SPEARMAN: { attack: 1.1 }, // Spearmen get +10% attack in aggressive formation
+                    CAVALRY: { attack: 1.2 }  // Cavalry get +20% attack in aggressive formation
+                },
+                terrainAdvantages: ["plains", "grass"],
+                specialEffects: ["first_strike"], // Attack first in combat
+                icon: "⚔️",
+                visualEffect: "aggressive_charge"
             },
             defensive: {
                 name: "Defensive",
                 description: "-30% attack, +30% defense, -20% casualties",
                 attack: 0.7,
                 defense: 1.3,
-                casualtyRate: 0.8
+                casualtyRate: 0.8,
+                unitBonuses: {
+                    SPEARMAN: { defense: 1.2 }, // Spearmen get +20% defense in defensive formation
+                    DEFENDER: { defense: 1.3 }  // Defenders get +30% defense in defensive formation
+                },
+                terrainAdvantages: ["forest", "mountain", "hills"],
+                specialEffects: ["shield_wall"], // Reduced damage from first enemy attack
+                icon: "🛡️",
+                visualEffect: "shield_wall"
             },
             flanking: {
                 name: "Flanking",
                 description: "+20% attack, -10% defense, -10% casualties",
                 attack: 1.2,
                 defense: 0.9,
-                casualtyRate: 0.9
+                casualtyRate: 0.9,
+                unitBonuses: {
+                    CAVALRY: { attack: 1.3, speed: 1.2 }, // Cavalry get +30% attack and +20% speed in flanking
+                    SCOUT: { attack: 1.2, speed: 1.3 }    // Scouts get +20% attack and +30% speed in flanking
+                },
+                terrainAdvantages: ["plains", "hills"],
+                specialEffects: ["surprise_attack"], // Chance to bypass enemy defense
+                icon: "↪️",
+                visualEffect: "flanking_maneuver"
+            },
+            skirmish: {
+                name: "Skirmish",
+                description: "Mobile hit-and-run tactics",
+                attack: 1.1,
+                defense: 0.8,
+                casualtyRate: 0.7,
+                unitBonuses: {
+                    ARCHER: { attack: 1.25, range: 1.2 }, // Archers get +25% attack and +20% range
+                    SCOUT: { speed: 1.4, evasion: 1.3 }   // Scouts get +40% speed and +30% evasion
+                },
+                terrainAdvantages: ["forest", "hills"],
+                specialEffects: ["hit_and_run"], // Chance to avoid counterattack
+                icon: "🏹",
+                visualEffect: "skirmish_movement"
+            },
+            phalanx: {
+                name: "Phalanx",
+                description: "Tight formation with spears and shields",
+                attack: 0.9,
+                defense: 1.4,
+                casualtyRate: 0.9,
+                unitBonuses: {
+                    SPEARMAN: { attack: 1.2, defense: 1.3 }, // Spearmen get +20% attack and +30% defense
+                    DEFENDER: { defense: 1.4 }              // Defenders get +40% defense
+                },
+                terrainAdvantages: ["plains", "grass"],
+                specialEffects: ["counter_attack"], // Automatic counterattack
+                icon: "🔱",
+                visualEffect: "phalanx_wall"
+            },
+            wedge: {
+                name: "Wedge",
+                description: "V-shaped formation to break enemy lines",
+                attack: 1.4,
+                defense: 0.8,
+                casualtyRate: 1.3,
+                unitBonuses: {
+                    CAVALRY: { attack: 1.4, penetration: 1.5 }, // Cavalry get +40% attack and +50% penetration
+                    SPEARMAN: { attack: 1.2 }                  // Spearmen get +20% attack
+                },
+                terrainAdvantages: ["plains"],
+                specialEffects: ["breakthrough"], // Chance to break enemy formation
+                icon: "▼",
+                visualEffect: "wedge_charge"
+            },
+            ambush: {
+                name: "Ambush",
+                description: "Hidden formation for surprise attacks",
+                attack: 1.5,
+                defense: 0.6,
+                casualtyRate: 0.8,
+                unitBonuses: {
+                    ARCHER: { attack: 1.3, critical: 1.4 }, // Archers get +30% attack and +40% critical chance
+                    SCOUT: { stealth: 1.5, critical: 1.3 }  // Scouts get +50% stealth and +30% critical chance
+                },
+                terrainAdvantages: ["forest", "hills", "mountain"],
+                specialEffects: ["surprise_round"], // Extra attack round at start of combat
+                icon: "🥷",
+                visualEffect: "ambush_surprise"
+            }
+        },
+
+        // Weather effects on combat
+        WEATHER_EFFECTS: {
+            clear: {
+                name: "Clear",
+                description: "Clear weather with no special effects",
+                attack: 1.0,
+                defense: 1.0,
+                movementSpeed: 1.0,
+                unitEffects: {},
+                visualEffect: "clear_sky",
+                probability: 0.5 // 50% chance of clear weather
+            },
+            rain: {
+                name: "Rain",
+                description: "Rainy weather that reduces archer effectiveness",
+                attack: 0.9,
+                defense: 1.0,
+                movementSpeed: 0.8,
+                unitEffects: {
+                    ARCHER: { attack: 0.7, range: 0.8 }, // Archers get -30% attack and -20% range
+                    CAVALRY: { speed: 0.8 }             // Cavalry gets -20% speed
+                },
+                terrainEffects: {
+                    grass: { movementSpeed: 0.7 },  // Grass becomes muddy
+                    plains: { movementSpeed: 0.7 }, // Plains become muddy
+                    forest: { defense: 1.1 }         // Forest provides more cover in rain
+                },
+                visualEffect: "rain_drops",
+                probability: 0.2 // 20% chance of rain
+            },
+            fog: {
+                name: "Fog",
+                description: "Foggy weather that reduces visibility and attack range",
+                attack: 0.8,
+                defense: 1.1,
+                movementSpeed: 0.9,
+                unitEffects: {
+                    ARCHER: { attack: 0.6, range: 0.5 }, // Archers get -40% attack and -50% range
+                    SCOUT: { vision: 0.5 }              // Scouts get -50% vision
+                },
+                terrainEffects: {
+                    forest: { defense: 1.3 }, // Forest provides even more cover in fog
+                    hills: { defense: 1.2 }   // Hills provide more cover in fog
+                },
+                visualEffect: "fog_overlay",
+                probability: 0.15 // 15% chance of fog
+            },
+            snow: {
+                name: "Snow",
+                description: "Snowy weather that slows movement but provides camouflage",
+                attack: 0.9,
+                defense: 1.0,
+                movementSpeed: 0.7,
+                unitEffects: {
+                    CAVALRY: { speed: 0.6, attack: 0.8 }, // Cavalry gets -40% speed and -20% attack
+                    SPEARMAN: { movementSpeed: 0.8 }      // Spearmen get -20% movement speed
+                },
+                terrainEffects: {
+                    mountain: { defense: 1.2 }, // Mountains provide more defense in snow
+                    forest: { attack: 0.8 }     // Forests reduce attack in snow
+                },
+                visualEffect: "snow_overlay",
+                probability: 0.1 // 10% chance of snow
+            },
+            sandstorm: {
+                name: "Sandstorm",
+                description: "Violent sandstorm that reduces visibility and combat effectiveness",
+                attack: 0.7,
+                defense: 0.8,
+                movementSpeed: 0.6,
+                unitEffects: {
+                    ARCHER: { attack: 0.5, range: 0.4 }, // Archers get -50% attack and -60% range
+                    CAVALRY: { speed: 0.7 },             // Cavalry gets -30% speed
+                    SPEARMAN: { attack: 0.8 }            // Spearmen get -20% attack
+                },
+                terrainEffects: {
+                    desert: { movementSpeed: 0.5, attack: 0.6 } // Desert becomes much worse in sandstorm
+                },
+                visualEffect: "sandstorm_overlay",
+                probability: 0.05 // 5% chance of sandstorm
             }
         }
     },
@@ -992,6 +1260,421 @@ const CONFIG = {
             weight: 7
         }
     ],
+
+    // Hero system configuration
+    HEROES: {
+        // Maximum number of heroes the player can have
+        MAX_HEROES: 5,
+
+        // Time interval (in seconds) for refreshing available heroes
+        REFRESH_INTERVAL: 300, // 5 minutes
+
+        // Hero types
+        TYPES: {
+            WARRIOR: {
+                name: "Warrior",
+                description: "A powerful melee fighter with high attack and defense.",
+                specialization: "combat",
+                portrait: "⚔️",
+                baseCost: { FOOD: 200, ORE: 300 },
+                baseStats: {
+                    attack: 15,
+                    defense: 12,
+                    hp: 100,
+                    speed: 8,
+                    leadership: 5
+                },
+                growthRates: {
+                    attack: 3,
+                    defense: 2,
+                    hp: 15,
+                    speed: 1,
+                    leadership: 1
+                },
+                startingAbility: "cleave",
+                abilities: [
+                    { id: "cleave", unlockLevel: 1 },
+                    { id: "rally", unlockLevel: 3 },
+                    { id: "shieldWall", unlockLevel: 5 }
+                ],
+                namePrefixes: ["Brave", "Mighty", "Valiant", "Bold", "Strong"],
+                nameSuffixes: ["Warrior", "Knight", "Defender", "Champion", "Protector"],
+                possibleTraits: [
+                    { id: "strong", name: "Strong", description: "+2 Attack", bonuses: { attack: 2 } },
+                    { id: "tough", name: "Tough", description: "+2 Defense", bonuses: { defense: 2 } },
+                    { id: "inspiring", name: "Inspiring", description: "+3 Leadership", bonuses: { leadership: 3 } },
+                    { id: "swift", name: "Swift", description: "+2 Speed", bonuses: { speed: 2 } }
+                ]
+            },
+            RANGER: {
+                name: "Ranger",
+                description: "A skilled archer with high speed and exploration abilities.",
+                specialization: "exploration",
+                portrait: "🏹",
+                baseCost: { FOOD: 250, ORE: 200 },
+                baseStats: {
+                    attack: 12,
+                    defense: 8,
+                    hp: 80,
+                    speed: 12,
+                    leadership: 4
+                },
+                growthRates: {
+                    attack: 2,
+                    defense: 1,
+                    hp: 10,
+                    speed: 3,
+                    leadership: 1
+                },
+                startingAbility: "preciseShot",
+                abilities: [
+                    { id: "preciseShot", unlockLevel: 1 },
+                    { id: "trackingSkills", unlockLevel: 3 },
+                    { id: "rapidFire", unlockLevel: 5 }
+                ],
+                namePrefixes: ["Swift", "Sharp", "Keen", "Silent", "Vigilant"],
+                nameSuffixes: ["Ranger", "Hunter", "Tracker", "Scout", "Archer"],
+                possibleTraits: [
+                    { id: "eagle_eye", name: "Eagle Eye", description: "+2 Attack", bonuses: { attack: 2 } },
+                    { id: "stealthy", name: "Stealthy", description: "+3 Speed", bonuses: { speed: 3 } },
+                    { id: "survivor", name: "Survivor", description: "+15 HP", bonuses: { hp: 15 } },
+                    { id: "pathfinder", name: "Pathfinder", description: "Improved exploration", bonuses: { exploration: 2 } }
+                ]
+            },
+            MAGE: {
+                name: "Mage",
+                description: "A powerful spellcaster with magical abilities and knowledge.",
+                specialization: "magic",
+                portrait: "🧙",
+                baseCost: { FOOD: 300, ORE: 200 },
+                baseStats: {
+                    attack: 15,
+                    defense: 6,
+                    hp: 70,
+                    speed: 7,
+                    leadership: 6,
+                    magic: 15
+                },
+                growthRates: {
+                    attack: 2,
+                    defense: 1,
+                    hp: 8,
+                    speed: 1,
+                    leadership: 1,
+                    magic: 3
+                },
+                startingAbility: "fireball",
+                abilities: [
+                    { id: "fireball", unlockLevel: 1 },
+                    { id: "frostNova", unlockLevel: 3 },
+                    { id: "arcaneShield", unlockLevel: 5 }
+                ],
+                namePrefixes: ["Wise", "Arcane", "Mystic", "Learned", "Ancient"],
+                nameSuffixes: ["Mage", "Wizard", "Sorcerer", "Sage", "Spellcaster"],
+                possibleTraits: [
+                    { id: "brilliant", name: "Brilliant", description: "+3 Magic", bonuses: { magic: 3 } },
+                    { id: "focused", name: "Focused", description: "+2 Attack", bonuses: { attack: 2 } },
+                    { id: "scholarly", name: "Scholarly", description: "Faster research", bonuses: { research: 2 } },
+                    { id: "energetic", name: "Energetic", description: "+2 Speed", bonuses: { speed: 2 } }
+                ]
+            },
+            DIPLOMAT: {
+                name: "Diplomat",
+                description: "A skilled negotiator with high leadership and diplomatic abilities.",
+                specialization: "diplomacy",
+                portrait: "🤝",
+                baseCost: { FOOD: 200, ORE: 150 },
+                baseStats: {
+                    attack: 6,
+                    defense: 8,
+                    hp: 75,
+                    speed: 9,
+                    leadership: 15,
+                    diplomacy: 15
+                },
+                growthRates: {
+                    attack: 1,
+                    defense: 1,
+                    hp: 10,
+                    speed: 1,
+                    leadership: 3,
+                    diplomacy: 3
+                },
+                startingAbility: "negotiate",
+                abilities: [
+                    { id: "negotiate", unlockLevel: 1 },
+                    { id: "inspire", unlockLevel: 3 },
+                    { id: "alliance", unlockLevel: 5 }
+                ],
+                namePrefixes: ["Noble", "Eloquent", "Charming", "Respected", "Honorable"],
+                nameSuffixes: ["Diplomat", "Envoy", "Ambassador", "Emissary", "Negotiator"],
+                possibleTraits: [
+                    { id: "charismatic", name: "Charismatic", description: "+3 Leadership", bonuses: { leadership: 3 } },
+                    { id: "persuasive", name: "Persuasive", description: "+3 Diplomacy", bonuses: { diplomacy: 3 } },
+                    { id: "well_connected", name: "Well-Connected", description: "Better trade deals", bonuses: { trade: 2 } },
+                    { id: "tactical", name: "Tactical", description: "+2 Defense", bonuses: { defense: 2 } }
+                ]
+            }
+        },
+
+        // Hero abilities
+        ABILITIES: {
+            // Warrior abilities
+            "cleave": {
+                name: "Cleave",
+                description: "A powerful attack that hits multiple enemies",
+                type: "combat",
+                power: 1.5,
+                cooldown: 3,
+                areaOfEffect: true,
+                icon: "⚔️"
+            },
+            "rally": {
+                name: "Rally",
+                description: "Boost the morale of nearby units, increasing their attack",
+                type: "support",
+                power: 1.3,
+                cooldown: 5,
+                targetStat: "attack",
+                duration: 3,
+                icon: "🚩"
+            },
+            "shieldWall": {
+                name: "Shield Wall",
+                description: "Create a defensive formation that increases defense",
+                type: "support",
+                power: 1.5,
+                cooldown: 4,
+                targetStat: "defense",
+                duration: 3,
+                icon: "🛡️"
+            },
+
+            // Ranger abilities
+            "preciseShot": {
+                name: "Precise Shot",
+                description: "A carefully aimed shot that deals high damage",
+                type: "combat",
+                power: 2.0,
+                cooldown: 3,
+                areaOfEffect: false,
+                icon: "🎯"
+            },
+            "trackingSkills": {
+                name: "Tracking Skills",
+                description: "Reveal hidden enemies and resources in the area",
+                type: "exploration",
+                power: 2,
+                cooldown: 5,
+                duration: 3,
+                icon: "👁️"
+            },
+            "rapidFire": {
+                name: "Rapid Fire",
+                description: "Fire multiple arrows in quick succession",
+                type: "combat",
+                power: 1.2,
+                cooldown: 4,
+                hits: 3,
+                icon: "🏹"
+            },
+
+            // Mage abilities
+            "fireball": {
+                name: "Fireball",
+                description: "Launch a ball of fire that explodes on impact",
+                type: "combat",
+                power: 2.0,
+                cooldown: 3,
+                areaOfEffect: true,
+                icon: "🔥"
+            },
+            "frostNova": {
+                name: "Frost Nova",
+                description: "Freeze enemies in place, reducing their speed",
+                type: "combat",
+                power: 1.0,
+                cooldown: 4,
+                targetStat: "speed",
+                duration: 2,
+                icon: "❄️"
+            },
+            "arcaneShield": {
+                name: "Arcane Shield",
+                description: "Create a magical barrier that absorbs damage",
+                type: "support",
+                power: 2.0,
+                cooldown: 5,
+                duration: 3,
+                icon: "🔮"
+            },
+
+            // Diplomat abilities
+            "negotiate": {
+                name: "Negotiate",
+                description: "Attempt to resolve a conflict peacefully",
+                type: "diplomacy",
+                power: 1.5,
+                cooldown: 3,
+                icon: "🤝"
+            },
+            "inspire": {
+                name: "Inspire",
+                description: "Inspire nearby units, increasing all their stats",
+                type: "support",
+                power: 1.2,
+                cooldown: 4,
+                targetStat: "all",
+                duration: 3,
+                icon: "✨"
+            },
+            "alliance": {
+                name: "Alliance",
+                description: "Form a temporary alliance with neutral or enemy forces",
+                type: "diplomacy",
+                power: 2.0,
+                cooldown: 6,
+                duration: 5,
+                icon: "🤲"
+            }
+        },
+
+        // Hero equipment
+        EQUIPMENT: {
+            // Weapons
+            WEAPONS: {
+                "iron_sword": {
+                    name: "Iron Sword",
+                    description: "A basic sword that increases attack",
+                    type: "weapon",
+                    rarity: "common",
+                    bonuses: { attack: 3 },
+                    icon: "🗡️"
+                },
+                "steel_axe": {
+                    name: "Steel Axe",
+                    description: "A heavy axe that deals significant damage",
+                    type: "weapon",
+                    rarity: "uncommon",
+                    bonuses: { attack: 5 },
+                    icon: "🪓"
+                },
+                "enchanted_bow": {
+                    name: "Enchanted Bow",
+                    description: "A magical bow that increases attack and speed",
+                    type: "weapon",
+                    rarity: "rare",
+                    bonuses: { attack: 4, speed: 2 },
+                    icon: "🏹"
+                },
+                "staff_of_power": {
+                    name: "Staff of Power",
+                    description: "A powerful staff that enhances magical abilities",
+                    type: "weapon",
+                    rarity: "rare",
+                    bonuses: { attack: 3, magic: 5 },
+                    icon: "🪄"
+                },
+                "legendary_blade": {
+                    name: "Legendary Blade",
+                    description: "An ancient blade of immense power",
+                    type: "weapon",
+                    rarity: "legendary",
+                    bonuses: { attack: 8, leadership: 3 },
+                    icon: "⚔️"
+                }
+            },
+
+            // Armor
+            ARMOR: {
+                "leather_armor": {
+                    name: "Leather Armor",
+                    description: "Basic armor that provides some protection",
+                    type: "armor",
+                    rarity: "common",
+                    bonuses: { defense: 3 },
+                    icon: "🥋"
+                },
+                "chainmail": {
+                    name: "Chainmail",
+                    description: "Metal armor that offers good protection",
+                    type: "armor",
+                    rarity: "uncommon",
+                    bonuses: { defense: 5 },
+                    icon: "👕"
+                },
+                "plate_armor": {
+                    name: "Plate Armor",
+                    description: "Heavy armor that provides excellent protection",
+                    type: "armor",
+                    rarity: "rare",
+                    bonuses: { defense: 7, speed: -1 },
+                    icon: "🛡️"
+                },
+                "mage_robes": {
+                    name: "Mage Robes",
+                    description: "Enchanted robes that enhance magical abilities",
+                    type: "armor",
+                    rarity: "rare",
+                    bonuses: { defense: 3, magic: 4 },
+                    icon: "👘"
+                },
+                "dragon_scale_armor": {
+                    name: "Dragon Scale Armor",
+                    description: "Legendary armor made from dragon scales",
+                    type: "armor",
+                    rarity: "legendary",
+                    bonuses: { defense: 10, hp: 20 },
+                    icon: "🐉"
+                }
+            },
+
+            // Accessories
+            ACCESSORIES: {
+                "lucky_charm": {
+                    name: "Lucky Charm",
+                    description: "A charm that brings good fortune",
+                    type: "accessory",
+                    rarity: "common",
+                    bonuses: { leadership: 2 },
+                    icon: "🍀"
+                },
+                "speed_amulet": {
+                    name: "Speed Amulet",
+                    description: "An amulet that increases movement speed",
+                    type: "accessory",
+                    rarity: "uncommon",
+                    bonuses: { speed: 3 },
+                    icon: "⏱️"
+                },
+                "healing_pendant": {
+                    name: "Healing Pendant",
+                    description: "A pendant that regenerates health over time",
+                    type: "accessory",
+                    rarity: "rare",
+                    bonuses: { hp: 15 },
+                    specialEffect: "regeneration",
+                    icon: "❤️"
+                },
+                "crown_of_command": {
+                    name: "Crown of Command",
+                    description: "A crown that enhances leadership abilities",
+                    type: "accessory",
+                    rarity: "rare",
+                    bonuses: { leadership: 5, diplomacy: 3 },
+                    icon: "👑"
+                },
+                "ancient_relic": {
+                    name: "Ancient Relic",
+                    description: "A powerful relic from a forgotten age",
+                    type: "accessory",
+                    rarity: "legendary",
+                    bonuses: { attack: 3, defense: 3, speed: 3, leadership: 3 },
+                    icon: "🏺"
+                }
+            }
+        }
+    },
 
     // Initial game state
     INITIAL_STATE: {

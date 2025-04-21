@@ -35,6 +35,7 @@ class GameState {
         this.combatSystem = null; // Will be initialized after game state is fully loaded
         this.questSystem = null; // Will be initialized after game state is fully loaded
         this.weatherSystem = null; // Will be initialized after game state is fully loaded
+        this.heroManager = null; // Will be initialized after game state is fully loaded
 
         // Game speed settings (1.0 = normal speed)
         this.gameSpeed = 1.0;
@@ -159,6 +160,16 @@ class GameState {
         if (typeof WeatherSystem !== 'undefined') {
             this.weatherSystem = new WeatherSystem(this);
         }
+
+        // Initialize unit experience system
+        if (typeof UnitExperienceSystem !== 'undefined') {
+            this.unitExperienceSystem = new UnitExperienceSystem(this);
+        }
+
+        // Initialize hero manager
+        if (typeof HeroManager !== 'undefined') {
+            this.heroManager = new HeroManager(this);
+        }
     }
 
     /**
@@ -222,6 +233,21 @@ class GameState {
         // Process quest system
         if (this.questSystem) {
             this.questSystem.update();
+        }
+
+        // Process unit experience system
+        if (this.unitExperienceSystem) {
+            this.unitExperienceSystem.update();
+        }
+
+        // Process weather system
+        if (this.weatherSystem) {
+            this.weatherSystem.update();
+        }
+
+        // Process hero manager
+        if (this.heroManager) {
+            this.heroManager.update(deltaTime);
         }
 
         // Process research queue (affected by season)
@@ -549,8 +575,13 @@ class GameState {
 
     /**
      * Resolve combat with an NPC camp
+     * @param {Object} target - The target NPC camp
+     * @param {Object} attackingUnits - Units sent to battle
+     * @param {string} formation - Combat formation used
+     * @param {Array} heroes - Heroes participating in battle
+     * @returns {Object} - Combat report
      */
-    resolveCombat(target, attackingUnits, formation = 'balanced') {
+    resolveCombat(target, attackingUnits, formation = 'balanced', heroes = []) {
         // Get camp configuration (either from target or from CONFIG)
         const campConfig = target.difficulty ?
             {
@@ -583,8 +614,33 @@ class GameState {
         const formationEffect = CONFIG.COMBAT.FORMATIONS[formation];
 
         // Use the combat manager to calculate base attack power
-        let playerAttack = combatManager.calculateAttackPower(attackingUnits, target);
+        let playerAttack = combatManager.calculateAttackPower(attackingUnits, target, heroes);
         let npcDefense = campConfig.difficulty * 10;
+
+        // Add hero combat bonuses
+        if (heroes && heroes.length > 0 && this.heroManager) {
+            for (const hero of heroes) {
+                // Add hero leadership bonus
+                if (hero.stats.leadership) {
+                    const leadershipBonus = hero.stats.leadership * 0.01; // 1% per leadership point
+                    playerAttack *= (1 + leadershipBonus);
+                }
+
+                // Add hero specialization bonus
+                const heroType = this.heroManager.heroTypes[hero.type];
+                if (heroType && heroType.specialization === 'combat') {
+                    playerAttack *= 1.1; // 10% bonus for combat heroes
+                }
+            }
+        }
+
+        // Apply hero ability effects if available
+        if (this.heroCombatSystem && target.id) {
+            const combatStats = { playerAttack, npcDefense };
+            const modifiedStats = this.heroCombatSystem.applyAbilityEffects(target.id, combatStats);
+            playerAttack = modifiedStats.playerAttack;
+            npcDefense = modifiedStats.enemyDefense;
+        }
 
         // Apply terrain effects
         playerAttack *= terrainEffect.attack;
@@ -650,8 +706,15 @@ class GameState {
             targetDifficulty: campConfig.difficulty,
             unitsSent: { ...attackingUnits },
             unitsLost: { SPEARMAN: 0, ARCHER: 0, CAVALRY: 0 },
+            heroes: heroes ? heroes.map(h => ({
+                id: h.id,
+                name: h.name,
+                type: h.type,
+                level: h.level
+            })) : [],
             result: '',
             loot: { FOOD: 0, ORE: 0 },
+            heroExperience: 0,
             combatDetails: {
                 playerAttack: playerAttack,
                 npcDefense: npcDefense,
@@ -748,6 +811,9 @@ class GameState {
 
             // Calculate base loot
             report.loot = { ...campConfig.loot };
+
+            // Add hero experience
+            report.heroExperience = 100 + (campConfig.difficulty * 10);
 
             // Apply enemy special ability if it affects loot
             if (campConfig.specialAbility && campConfig.specialAbility.effect.lootReduction) {
@@ -943,6 +1009,7 @@ class GameState {
 
     /**
      * Set unlimited resources for testing
+     * Sets all resources to 999999 as requested by the user
      */
     setUnlimitedResources() {
         // First increase storage capacity to hold the resources
@@ -952,17 +1019,17 @@ class GameState {
         // Create a flag to bypass normal storage capacity calculation
         this._unlimitedResourcesActive = true;
 
-        // Then set all resources to 999999
+        // Set all resources to exactly 999999 as requested
         this.resources.FOOD = 999999;
         this.resources.ORE = 999999;
 
-        // Also add some units for testing
-        this.units.SPEARMAN = 999;
-        this.units.ARCHER = 999;
-        this.units.CAVALRY = 999;
+        // Also add units for testing
+        this.units.SPEARMAN = 999999;
+        this.units.ARCHER = 999999;
+        this.units.CAVALRY = 999999;
 
         // Log the action
-        this.activityLogManager.addLogEntry('System', 'Unlimited resources and units activated for testing');
+        this.activityLogManager.addLogEntry('System', 'TEST MODE ACTIVATED: All resources and units set to 999999');
 
         // Trigger UI update
         this.onStateChange();
@@ -1966,6 +2033,23 @@ class GameState {
      */
     onStateChange() {
         // This will be set by the UI to update when state changes
+    }
+
+    /**
+     * Save game state
+     */
+    saveGame() {
+        if (this.saveSystem) {
+            this.saveSystem.saveGame();
+        }
+    }
+
+    /**
+     * Get hero manager
+     * @returns {HeroManager} - The hero manager
+     */
+    getHeroManager() {
+        return this.heroManager;
     }
 }
 

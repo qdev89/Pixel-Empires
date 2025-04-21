@@ -96,6 +96,7 @@
                         <button class="empire-tab-button active" data-tab="buildings"><div class="tab-icon buildings"></div>Buildings</button>
                         <button class="empire-tab-button" data-tab="military"><div class="tab-icon military"></div>Military</button>
                         <button class="empire-tab-button" data-tab="research"><div class="tab-icon research"></div>Research</button>
+                        <button class="empire-tab-button" data-tab="map"><div class="tab-icon map"></div>Map</button>
                         <button class="empire-tab-button" data-tab="diplomacy"><div class="tab-icon diplomacy"></div>Diplomacy</button>
                         <button class="empire-tab-button" data-tab="reports"><div class="tab-icon reports"></div>Reports</button>
                     </div>
@@ -180,6 +181,48 @@
                                     <button id="propose-alliance-button" class="diplomatic-button" disabled>Propose Alliance</button>
                                     <button id="declare-war-button" class="diplomatic-button" disabled>Declare War</button>
                                     <button id="send-emissary-button" class="diplomatic-button" disabled>Send Emissary</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map Tab -->
+                        <div id="map-tab" class="tab-content">
+                            <div class="tab-section">
+                                <h4>World Map</h4>
+                                <div id="enhanced-map-container">
+                                    <div id="enhanced-map-wrapper">
+                                        <div id="enhanced-map"></div>
+                                    </div>
+                                    <div id="enhanced-minimap-container">
+                                        <div id="enhanced-minimap"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Map Controls</h4>
+                                <div id="map-controls">
+                                    <button id="enhanced-zoom-in" class="map-control-button">Zoom In</button>
+                                    <button id="enhanced-zoom-out" class="map-control-button">Zoom Out</button>
+                                    <button id="enhanced-center-map" class="map-control-button">Center Map</button>
+                                    <button id="toggle-fog" class="map-control-button">Toggle Fog of War</button>
+                                    <button id="toggle-grid" class="map-control-button">Toggle Grid</button>
+                                </div>
+                            </div>
+                            <div class="tab-section">
+                                <h4>Location Information</h4>
+                                <div id="location-info">
+                                    <div id="terrain-info">
+                                        <h5>Terrain</h5>
+                                        <div id="selected-terrain">No terrain selected</div>
+                                    </div>
+                                    <div id="special-location-info">
+                                        <h5>Special Location</h5>
+                                        <div id="selected-location">No special location selected</div>
+                                    </div>
+                                    <div id="location-actions">
+                                        <button id="explore-location" class="location-action-button" disabled>Explore</button>
+                                        <button id="interact-location" class="location-action-button" disabled>Interact</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -353,6 +396,13 @@
                         </div>
                     </div>
 
+                    <div id="hero-selection" class="hero-selection">
+                        <h4>Select Heroes</h4>
+                        <div id="hero-container" class="hero-container">
+                            <!-- Hero cards will be dynamically generated here -->
+                        </div>
+                    </div>
+
                     <div class="terrain-info">
                         <h4>Terrain</h4>
                         <div id="terrain-type">Unknown</div>
@@ -416,7 +466,6 @@
     <script src="scripts/save-system.js"></script>
     <script src="scripts/animations.js"></script>
     <script src="scripts/unit-animations.js"></script>
-    <script src="scripts/weatherSystem.js"></script>
     <script src="scripts/tradeSystem.js"></script>
     <script src="scripts/combatSystem.js"></script>
     <script src="scripts/questSystem.js"></script>
@@ -432,6 +481,27 @@
     <script src="scripts/save-ui.js"></script>
     <script src="scripts/diplomacy-ui.js"></script>
     <script src="scripts/chat-system.js"></script>
+    <script src="scripts/perlin-noise.js"></script>
+    <script src="scripts/map-system.js"></script>
+    <script src="scripts/map-renderer.js"></script>
+    <script src="scripts/minimap.js"></script>
+    <script src="scripts/map-ui.js"></script>
+    <script src="scripts/hero.js"></script>
+    <script src="scripts/hero-combat.js"></script>
+    <script src="scripts/hero-combat-report.js"></script>
+    <script src="scripts/hero-combat-animations.js"></script>
+    <script src="scripts/hero-specializations.js"></script>
+    <script src="scripts/hero-traits.js"></script>
+    <script src="scripts/hero-equipment.js"></script>
+    <script src="scripts/hero-equipment-sets.js"></script>
+    <script src="scripts/hero-skill-tree.js"></script>
+    <script src="scripts/hero-quest.js"></script>
+    <script src="scripts/hero-skill-tree-ui.js"></script>
+    <script src="scripts/hero-quest-ui.js"></script>
+    <script src="scripts/hero-ui.js"></script>
+    <script src="scripts/unit-experience.js"></script>
+    <script src="scripts/weather-system.js"></script>
+    <script src="scripts/combat-ui-enhancements.js"></script>
     <script src="scripts/main.js"></script>
 </body>
 </html>

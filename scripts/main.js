@@ -26,8 +26,45 @@ const eventsUI = new EventsUI(gameState, gameState.eventManager);
 const chatSystem = new ChatSystem(gameState);
 const chatUI = new ChatUI(chatSystem);
 
+// Initialize hero systems if hero manager is available
+if (gameState.heroManager) {
+    // Initialize hero combat systems
+    gameState.heroCombatSystem = new HeroCombatSystem(gameState, gameState.heroManager);
+    gameState.heroCombatReportSystem = new HeroCombatReportSystem(gameState);
+    gameState.heroCombatAnimations = new HeroCombatAnimations(gameState);
+
+    // Initialize hero specialization and trait systems
+    gameState.heroSpecializationsSystem = new HeroSpecializationsSystem(gameState, gameState.heroManager);
+    gameState.heroTraitsSystem = new HeroTraitsSystem(gameState, gameState.heroManager);
+
+    // Initialize hero equipment system
+    gameState.heroEquipmentSystem = new HeroEquipmentSystem(gameState, gameState.heroManager);
+    gameState.heroEquipmentSetsSystem = new HeroEquipmentSetsSystem(gameState, gameState.heroManager, gameState.heroEquipmentSystem);
+
+    // Initialize hero skill tree system
+    gameState.heroSkillTreeSystem = new HeroSkillTreeSystem(gameState, gameState.heroManager);
+
+    // Initialize hero quest system
+    gameState.heroQuestSystem = new HeroQuestSystem(gameState, gameState.heroManager);
+
+    // Initialize hero UI components
+    gameState.heroSkillTreeUI = new HeroSkillTreeUI(gameState, gameState.heroManager, gameState.heroSkillTreeSystem);
+    gameState.heroQuestUI = new HeroQuestUI(gameState, gameState.heroManager, gameState.heroQuestSystem);
+}
+
+// Initialize hero UI if hero manager is available
+let heroUI = null;
+if (gameState.heroManager) {
+    heroUI = new HeroUI(gameState, gameState.heroManager);
+}
+
 // Game loop
-function gameLoop() {
+let lastTimestamp = 0;
+function gameLoop(timestamp) {
+    // Calculate delta time in seconds
+    const deltaTime = (timestamp - lastTimestamp) / 1000;
+    lastTimestamp = timestamp;
+
     // Update game state
     gameState.update();
 
@@ -36,6 +73,16 @@ function gameLoop() {
 
     // Update events UI
     eventsUI.updateUI();
+
+    // Update hero UI if available
+    if (heroUI) {
+        heroUI.updateHeroUI();
+    }
+
+    // Update hero combat system if available
+    if (gameState.heroCombatSystem) {
+        gameState.heroCombatSystem.update(deltaTime);
+    }
 
     // Schedule next frame
     requestAnimationFrame(gameLoop);
@@ -103,6 +150,31 @@ function setupTestEnvironment() {
     gameState.units.SPEARMAN = 10;
     gameState.units.ARCHER = 10;
     gameState.units.CAVALRY = 5;
+
+    // Add some test equipment for heroes
+    if (gameState.heroManager) {
+        // Create a test hero with some equipment
+        const testHero = gameState.heroManager.generateHero('WARRIOR', gameState.heroManager.heroTypes.WARRIOR);
+        testHero.inventory.push({
+            id: 'test_sword',
+            name: 'Steel Sword',
+            description: 'A sharp steel sword',
+            type: 'weapon',
+            rarity: 'uncommon',
+            bonuses: { attack: 4 },
+            icon: '🗡️'
+        });
+        testHero.inventory.push({
+            id: 'test_armor',
+            name: 'Leather Armor',
+            description: 'Basic protective armor',
+            type: 'armor',
+            rarity: 'common',
+            bonuses: { defense: 3 },
+            icon: '🥋'
+        });
+        gameState.heroManager.heroes.push(testHero);
+    }
 }
 
 // Call setup function

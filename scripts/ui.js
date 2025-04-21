@@ -25,6 +25,9 @@ class UIManager {
         // Initialize diplomacy UI
         this.diplomacyUI = new DiplomacyUI(this.gameState, this);
 
+        // Initialize map UI
+        this.mapUI = new MapUI(this.gameState, this);
+
         // Set up state change handler
         this.gameState.onStateChange = () => this.updateUI();
 
@@ -1584,84 +1587,11 @@ class UIManager {
 
     /**
      * Update active harvesting operations display
+     * Resource collectors removed as per user preference
      */
     updateHarvestingOperations() {
-        // Check if the harvesting operations section exists
-        let harvestingSection = document.getElementById('harvesting-operations');
-
-        if (!harvestingSection) {
-            // Create the section if it doesn't exist
-            const eventsSection = document.getElementById('events-section');
-
-            if (!eventsSection) return; // Can't find the events section to insert before
-
-            harvestingSection = document.createElement('div');
-            harvestingSection.id = 'harvesting-operations';
-            harvestingSection.className = 'game-section';
-
-            harvestingSection.innerHTML = `
-                <div class="section-header">
-                    <h3>Active Operations</h3>
-                </div>
-                <div id="harvesting-list"></div>
-            `;
-
-            // Insert before the events section
-            eventsSection.parentNode.insertBefore(harvestingSection, eventsSection);
-        }
-
-        // Get the harvesting list element
-        const harvestingList = document.getElementById('harvesting-list');
-
-        // Clear the list
-        harvestingList.innerHTML = '';
-
-        // Check if there are any active operations
-        if (this.gameState.harvestingOperations.length === 0) {
-            harvestingList.innerHTML = '<div class="no-operations">No active operations</div>';
-            return;
-        }
-
-        // Add each operation to the list
-        for (const operation of this.gameState.harvestingOperations) {
-            const operationElement = document.createElement('div');
-            operationElement.className = `operation-item operation-${operation.status}`;
-
-            // Calculate progress
-            let progressText = '';
-            let progressPercent = 0;
-            const now = Date.now();
-
-            if (operation.status === 'traveling') {
-                const elapsed = now - operation.startTime;
-                progressPercent = Math.min(100, (elapsed / operation.travelTime) * 100);
-                progressText = `Traveling to ${operation.node.type} node (${Math.floor(progressPercent)}%)`;
-            } else if (operation.status === 'harvesting') {
-                const elapsed = now - operation.harvestTime;
-                progressPercent = Math.min(100, (elapsed / operation.harvestDuration) * 100);
-                progressText = `Harvesting ${operation.node.type} (${Math.floor(progressPercent)}%)`;
-            } else if (operation.status === 'returning') {
-                const elapsed = now - operation.returnTime;
-                progressPercent = Math.min(100, (elapsed / operation.travelTime) * 100);
-                progressText = `Returning with ${operation.resourcesHarvested} ${operation.node.type} (${Math.floor(progressPercent)}%)`;
-            }
-
-            // Show units involved
-            const unitText = [];
-            if (operation.units.SPEARMAN > 0) unitText.push(`${operation.units.SPEARMAN} Spearmen`);
-            if (operation.units.ARCHER > 0) unitText.push(`${operation.units.ARCHER} Archers`);
-            if (operation.units.CAVALRY > 0) unitText.push(`${operation.units.CAVALRY} Cavalry`);
-
-            operationElement.innerHTML = `
-                <div class="operation-status">${progressText}</div>
-                <div class="operation-units">${unitText.join(', ')}</div>
-                <div class="progress-container">
-                    <div class="progress-bar" style="width: ${progressPercent}%"></div>
-                </div>
-            `;
-
-            harvestingList.appendChild(operationElement);
-        }
+        // Resource collectors removed as per user preference
+        return;
     }
 
     /**
@@ -1838,8 +1768,7 @@ class UIManager {
         // Update combat reports
         this.updateCombatReports();
 
-        // Update harvesting operations
-        this.updateHarvestingOperations();
+        // Resource collectors removed as per user preference
 
         // Update event history if events UI exists
         if (this.eventsUI) {
@@ -1849,6 +1778,11 @@ class UIManager {
         // Update diplomacy UI if it exists
         if (this.diplomacyUI) {
             this.diplomacyUI.update();
+        }
+
+        // Update map UI if it exists
+        if (this.mapUI) {
+            this.mapUI.update();
         }
     }
 

@@ -41,8 +41,13 @@ class CombatUI {
             totalAttackPower: document.getElementById('total-attack-power'),
             targetDefense: document.getElementById('target-defense'),
             battleOutcome: document.getElementById('battle-outcome'),
-            advantageInfo: document.getElementById('advantage-info')
+            advantageInfo: document.getElementById('advantage-info'),
+            heroSelection: document.getElementById('hero-selection'),
+            heroContainer: document.getElementById('hero-container')
         };
+
+        // Track selected heroes
+        this.selectedHeroes = [];
 
         // Initialize event listeners
         this.initEventListeners();
@@ -91,6 +96,162 @@ class CombatUI {
         this.elements.attackButton.addEventListener('click', () => {
             this.launchAttack();
         });
+    }
+
+    /**
+     * Create hero selection UI
+     */
+    createHeroSelectionUI() {
+        // Clear existing content
+        if (this.elements.heroContainer) {
+            this.elements.heroContainer.innerHTML = '';
+        } else {
+            // Create hero selection container if it doesn't exist
+            const heroSection = document.createElement('div');
+            heroSection.id = 'hero-selection';
+            heroSection.className = 'hero-selection';
+            heroSection.innerHTML = '<h4>Select Heroes</h4>';
+
+            const heroContainer = document.createElement('div');
+            heroContainer.id = 'hero-container';
+            heroContainer.className = 'hero-container';
+
+            heroSection.appendChild(heroContainer);
+
+            // Insert after formation selection
+            const formationSection = document.querySelector('.formation-selection');
+            if (formationSection && formationSection.parentNode) {
+                formationSection.parentNode.insertBefore(heroSection, formationSection.nextSibling);
+            } else {
+                // Fallback: append to form
+                this.elements.unitSelectionForm.appendChild(heroSection);
+            }
+
+            this.elements.heroSelection = heroSection;
+            this.elements.heroContainer = heroContainer;
+        }
+
+        // Get available heroes
+        const heroManager = this.gameState.heroManager;
+        if (!heroManager) return;
+
+        const activeHeroes = heroManager.getActiveHeroes().filter(hero => hero.status === 'active');
+
+        if (activeHeroes.length === 0) {
+            this.elements.heroContainer.innerHTML = '<div class="no-heroes">No heroes available for combat</div>';
+            return;
+        }
+
+        // Create hero selection cards
+        for (const hero of activeHeroes) {
+            const heroCard = document.createElement('div');
+            heroCard.className = `hero-combat-card ${this.selectedHeroes.includes(hero.id) ? 'selected' : ''}`;
+            heroCard.dataset.heroId = hero.id;
+
+            // Calculate total stats
+            const totalStats = heroManager.calculateHeroTotalStats(hero.id);
+
+            // Get hero equipment
+            const equipment = this.getHeroEquipmentIcons(hero);
+
+            // Create hero card content
+            heroCard.innerHTML = `
+                <div class="hero-portrait">${hero.portrait}</div>
+                <div class="hero-info">
+                    <div class="hero-name">${hero.name}</div>
+                    <div class="hero-type">${heroManager.heroTypes[hero.type].name} (Lvl ${hero.level})</div>
+                </div>
+                <div class="hero-combat-stats">
+                    <div class="hero-stat"><span class="stat-icon">⚔️</span> ${totalStats.attack}</div>
+                    <div class="hero-stat"><span class="stat-icon">🛡️</span> ${totalStats.defense}</div>
+                    <div class="hero-stat"><span class="stat-icon">👑</span> ${totalStats.leadership || 0}</div>
+                </div>
+                ${equipment ? `<div class="hero-equipment">${equipment}</div>` : ''}
+                ${hero.abilities && hero.abilities.length > 0 ? this.createHeroAbilitiesPreview(hero) : ''}
+            `;
+
+            // Add click event to select/deselect hero
+            heroCard.addEventListener('click', () => {
+                const heroId = heroCard.dataset.heroId;
+                const index = this.selectedHeroes.indexOf(heroId);
+
+                if (index === -1) {
+                    // Select hero (max 3 heroes)
+                    if (this.selectedHeroes.length < 3) {
+                        this.selectedHeroes.push(heroId);
+                        heroCard.classList.add('selected');
+                    }
+                } else {
+                    // Deselect hero
+                    this.selectedHeroes.splice(index, 1);
+                    heroCard.classList.remove('selected');
+                }
+
+                // Update attack power calculation
+                this.updateAttackPowerCalculation();
+            });
+
+            this.elements.heroContainer.appendChild(heroCard);
+        }
+    }
+
+    /**
+     * Get hero equipment icons as HTML
+     * @param {Object} hero - The hero object
+     * @returns {string} - HTML string of equipment icons
+     */
+    getHeroEquipmentIcons(hero) {
+        if (!hero.equipment) return '';
+
+        const equipmentIcons = [];
+        const equipmentSlots = ['weapon', 'armor', 'accessory', 'artifact'];
+
+        for (const slot of equipmentSlots) {
+            const item = hero.equipment[slot];
+            if (item) {
+                const rarityClass = item.rarity || 'common';
+                equipmentIcons.push(`
+                    <div class="equipment-icon ${rarityClass}" title="${item.name}: ${item.description || ''}">
+                        ${item.icon || '?'}
+                    </div>
+                `);
+            }
+        }
+
+        if (equipmentIcons.length === 0) return '';
+
+        return `<div class="equipment-icons">${equipmentIcons.join('')}</div>`;
+    }
+
+    /**
+     * Create hero abilities preview
+     * @param {Object} hero - The hero object
+     * @returns {string} - HTML string of hero abilities
+     */
+    createHeroAbilitiesPreview(hero) {
+        if (!hero.abilities || hero.abilities.length === 0) return '';
+
+        const heroManager = this.gameState.heroManager;
+        if (!heroManager || !heroManager.heroAbilities) return '';
+
+        const abilityIcons = [];
+
+        for (const abilityId of hero.abilities) {
+            const ability = heroManager.heroAbilities[abilityId];
+            if (!ability) continue;
+
+            const abilityTypeClass = ability.type || 'unknown';
+            abilityIcons.push(`
+                <div class="ability-preview-icon ${abilityTypeClass}"
+                     title="${ability.name}: ${ability.description || ''}">
+                    ${ability.icon || '✨'}
+                </div>
+            `);
+        }
+
+        if (abilityIcons.length === 0) return '';
+
+        return `<div class="ability-preview-icons">${abilityIcons.join('')}</div>`;
     }
 
     /**
@@ -168,6 +329,12 @@ class CombatUI {
             this.elements.unitInputs[unitType].max = maxUnits;
         }
 
+        // Reset selected heroes
+        this.selectedHeroes = [];
+
+        // Create hero selection UI
+        this.createHeroSelectionUI();
+
         // Reset attack power calculation
         this.updateAttackPowerCalculation();
 
@@ -191,6 +358,7 @@ class CombatUI {
 
         let totalAttackPower = 0;
         let advantageText = '';
+        let heroBonus = 0;
 
         // Calculate attack power for each unit type
         const spearmenCount = parseInt(this.elements.unitInputs.spearman.value) || 0;
@@ -328,6 +496,43 @@ class CombatUI {
             targetDefense *= (1 - this.targetCamp.config.specialAbility.effect.defenseReduction);
         }
 
+        // Calculate hero bonus
+        if (this.selectedHeroes.length > 0 && this.gameState.heroManager) {
+            const heroManager = this.gameState.heroManager;
+
+            for (const heroId of this.selectedHeroes) {
+                const hero = heroManager.getHeroById(heroId);
+                if (!hero) continue;
+
+                // Calculate hero's total stats
+                const heroStats = heroManager.calculateHeroTotalStats(heroId);
+
+                // Base bonus from hero level
+                const levelBonus = hero.level * 0.02; // 2% per level
+
+                // Bonus from hero stats
+                const statBonus = (heroStats.attack / 100) + (heroStats.leadership / 200);
+
+                // Bonus from hero specialization
+                let specializationBonus = 0;
+                const heroType = heroManager.heroTypes[hero.type];
+
+                if (heroType && heroType.specialization === 'combat') {
+                    specializationBonus = 0.1; // 10% bonus for combat heroes
+                }
+
+                // Add to total hero bonus
+                const totalHeroBonus = levelBonus + statBonus + specializationBonus;
+                heroBonus += totalHeroBonus;
+
+                // Add to advantage text
+                advantageText += `<div class="advantage">${hero.name} +${Math.round(totalHeroBonus * 100)}% combat bonus</div>`;
+            }
+
+            // Apply hero bonus to attack power
+            totalAttackPower *= (1 + Math.min(0.5, heroBonus)); // Cap at 50% bonus
+        }
+
         // Update UI
         this.elements.totalAttackPower.textContent = totalAttackPower.toFixed(1);
         this.elements.targetDefense.textContent = targetDefense.toFixed(1);
@@ -374,8 +579,8 @@ class CombatUI {
             }
         }
 
-        // Launch the attack with formation
-        this.combatManager.attackNPCWithUnits(this.targetCamp.x, this.targetCamp.y, units, selectedFormation);
+        // Launch the attack with formation and heroes
+        this.combatManager.attackNPCWithUnits(this.targetCamp.x, this.targetCamp.y, units, selectedFormation, this.selectedHeroes);
 
         // Hide the modal
         this.hideModal();
