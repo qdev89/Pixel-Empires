@@ -2051,6 +2051,30 @@ class GameState {
     getHeroManager() {
         return this.heroManager;
     }
+
+    /**
+     * Set unlimited resources for testing
+     * Sets all resources to 999999 and enables unlimited resource mode
+     */
+    setUnlimitedResources() {
+        // Set all resources to a very high number
+        this.resources.FOOD = 999999;
+        this.resources.ORE = 999999;
+
+        // Set flag to indicate unlimited resources are active
+        this._unlimitedResourcesActive = true;
+
+        // Log the action
+        if (this.activityLogManager) {
+            this.activityLogManager.addLogEntry('System', 'Unlimited resources activated for testing');
+        }
+
+        // Trigger UI update
+        this.onStateChange();
+
+        // Show confirmation message to user
+        alert('Unlimited resources activated for testing!');
+    }
 }
 
 // GameState class is now ready to be instantiated in main.js

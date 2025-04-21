@@ -1,0 +1,403 @@
+/* Compact UI styles for Pixel Empires */
+
+/* Additional layout improvements */
+.buildings-container,
+.military-container,
+.research-container,
+.diplomacy-container,
+.map-container,
+.reports-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.map-quick-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.mini-button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--button-border-radius);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.mini-button:hover {
+    background-color: var(--button-hover);
+}
+
+.section-icon {
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+.map-bottom-panel {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 8px;
+}
+
+/* Compact map display */
+.compact-map {
+    height: 350px; /* Reduced height */
+}
+
+/* Compact empty states */
+.compact-empty {
+    padding: 5px;
+    font-size: 10px;
+}
+
+/* Compact section headers */
+.compact-header {
+    padding: 5px 8px;
+    min-height: 30px;
+}
+
+/* Compact section content */
+.compact-content {
+    padding: 8px;
+}
+
+/* Compact section */
+.compact-section {
+    margin-bottom: 8px;
+}
+
+/* Reduce overall spacing */
+:root {
+    --section-spacing: 10px;
+    --card-spacing: 8px;
+    --content-padding: 10px;
+    --card-border-radius: 6px;
+    --button-border-radius: 4px;
+}
+
+/* Make the game sections more compact */
+.game-section {
+    margin-bottom: var(--section-spacing);
+    padding: 0;
+}
+
+.section-header {
+    padding: 8px 10px;
+    min-height: 40px;
+}
+
+.section-title {
+    font-size: 14px;
+}
+
+.section-content {
+    padding: var(--content-padding);
+}
+
+/* Make tab navigation more compact */
+.tab-navigation {
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+/* Make tab content more compact */
+.tab-content {
+    padding: 10px;
+}
+
+.tab-section {
+    margin-bottom: 12px;
+}
+
+.tab-section h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+/* Compact card grid for buildings */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--card-spacing);
+    margin-bottom: 10px;
+}
+
+/* Compact building tiles */
+.building-tile {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 100px;
+    max-height: 120px;
+}
+
+.building-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+}
+
+.building-name {
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.building-level {
+    font-size: 10px;
+    color: var(--highlight-color);
+    margin-bottom: 2px;
+}
+
+.building-description {
+    font-size: 10px;
+    text-align: center;
+    color: #ccc;
+    margin-bottom: 4px;
+    max-height: 30px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.building-production {
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Compact button grid */
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--card-spacing);
+}
+
+/* Compact building buttons */
+.building-button {
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--button-border-radius);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 80px;
+}
+
+.building-button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+.building-button-icon {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 4px;
+}
+
+.building-info {
+    font-size: 10px;
+    text-align: center;
+}
+
+.building-cost {
+    display: flex;
+    gap: 5px;
+    margin-top: 4px;
+    font-size: 9px;
+}
+
+.cost-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.cost-icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* Compact info cards */
+.info-card {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.info-header {
+    margin-bottom: 5px;
+}
+
+.info-header h5 {
+    font-size: 12px;
+    margin: 0;
+}
+
+.info-content {
+    font-size: 11px;
+}
+
+/* Compact info grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--card-spacing);
+}
+
+/* Compact action buttons */
+.action-button {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+/* Compact unit stats */
+.unit-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--secondary-color);
+    padding: 4px 8px;
+    border-radius: var(--button-border-radius);
+    border: 1px solid var(--border-color);
+    font-size: 12px;
+}
+
+.unit-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.unit-upkeep {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+}
+
+/* Compact sub-tabs */
+.sub-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.sub-tab-button {
+    padding: 5px 8px;
+    background-color: var(--button-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--button-border-radius);
+    color: var(--text-color);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sub-tab-button:hover {
+    background-color: var(--button-hover);
+}
+
+.sub-tab-button.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Compact status card */
+.status-card {
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-border-radius);
+    padding: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.progress-container {
+    height: 10px;
+    background-color: var(--primary-color);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--accent-color);
+    width: 0%;
+}
+
+/* Compact event list */
+.event-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+/* Compact empty state */
+.empty-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.info-icon {
+    font-size: 16px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .button-grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+}

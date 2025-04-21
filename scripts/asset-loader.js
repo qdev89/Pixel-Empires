@@ -6,23 +6,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Check all image elements and provide fallbacks if needed
     const images = document.querySelectorAll('img');
-    
+
     images.forEach(img => {
         // Store the original src
         const originalSrc = img.src;
-        
+
         // Add error handler to provide fallbacks
         img.onerror = function() {
             console.warn(`Failed to load image: ${originalSrc}`);
-            
+
             // Check if it's a resource icon
             if (img.classList.contains('resource-icon')) {
                 const alt = img.alt.toLowerCase();
-                
+
                 // Create a fallback element
                 const fallbackIcon = document.createElement('div');
                 fallbackIcon.className = `resource-icon ${alt}-icon`;
-                
+
                 // Set the text content based on the resource type
                 if (alt === 'food') {
                     fallbackIcon.textContent = 'F';
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     fallbackIcon.textContent = alt.charAt(0).toUpperCase();
                     fallbackIcon.style.backgroundColor = '#2a2a6e'; // Blue
                 }
-                
+
                 // Replace the img with the fallback
                 img.parentNode.replaceChild(fallbackIcon, img);
             } else {
@@ -46,8 +46,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 img.alt = `Missing: ${img.alt || 'image'}`;
             }
         };
-        
-        // Force reload to trigger error handler if needed
-        img.src = originalSrc;
+
+        // Fix paths for resource icons if needed
+        if (img.classList.contains('resource-icon')) {
+            const alt = img.alt.toLowerCase();
+            if (alt === 'food' || alt === 'ore') {
+                // Use relative path with proper directory structure
+                img.src = `assets/icons/${alt}.png`;
+
+                // Create a fallback immediately to avoid flashing
+                const fallbackIcon = document.createElement('div');
+                fallbackIcon.className = `resource-icon ${alt}-icon`;
+
+                if (alt === 'food') {
+                    fallbackIcon.textContent = 'F';
+                    fallbackIcon.style.backgroundColor = '#2a6e2a'; // Green
+                } else if (alt === 'ore') {
+                    fallbackIcon.textContent = 'O';
+                    fallbackIcon.style.backgroundColor = '#6e2a2a'; // Red
+                }
+
+                // Keep a reference to the fallback
+                img.fallbackElement = fallbackIcon;
+            }
+        } else {
+            // Force reload to trigger error handler if needed
+            img.src = originalSrc;
+        }
     });
 });

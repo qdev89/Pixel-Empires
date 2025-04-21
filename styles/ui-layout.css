@@ -1,0 +1,307 @@
+/* UI Layout improvements for Pixel Empires */
+
+/* Global layout improvements */
+:root {
+    --header-height: 60px;
+    --sidebar-width: 250px;
+    --content-max-width: 1200px;
+    --section-spacing: 15px;
+    --card-border-radius: 8px;
+    --button-border-radius: 6px;
+    --menu-transition: all 0.3s ease;
+}
+
+/* Improved header layout */
+#game-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: var(--primary-color);
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Main menu button */
+#main-menu-button {
+    background-color: var(--button-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: var(--button-border-radius);
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    transition: var(--menu-transition);
+}
+
+#main-menu-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Main navigation menu */
+#main-nav {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    background-color: var(--primary-color);
+    border-right: 2px solid var(--border-color);
+    transform: translateX(-100%);
+    transition: var(--menu-transition);
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+#main-nav.active {
+    transform: translateX(0);
+}
+
+/* Main menu categories */
+.menu-category {
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.menu-category-title {
+    font-size: var(--font-size-medium);
+    color: var(--highlight-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: var(--button-border-radius);
+    margin-bottom: 5px;
+    transition: var(--menu-transition);
+    cursor: pointer;
+    gap: 10px;
+}
+
+.menu-item:hover {
+    background-color: var(--button-hover);
+}
+
+.menu-item.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.menu-item-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+/* Main content layout */
+#game-main {
+    display: flex;
+    flex-direction: column;
+    padding: var(--section-spacing);
+    transition: var(--menu-transition);
+}
+
+#game-main.menu-open {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* Game sections */
+.game-section {
+    margin-bottom: var(--section-spacing);
+    border-radius: var(--card-border-radius);
+    overflow: hidden;
+}
+
+/* Section headers */
+.section-header {
+    background-color: var(--secondary-color);
+    padding: 10px 15px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: var(--font-size-medium);
+    color: var(--highlight-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.section-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Section content */
+.section-content {
+    padding: 15px;
+    background-color: var(--primary-color);
+}
+
+/* Tab navigation */
+.tab-navigation {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    background-color: var(--secondary-color);
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.tab-button {
+    padding: 12px 20px;
+    background-color: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-color);
+    font-size: var(--font-size-small);
+    cursor: pointer;
+    transition: var(--menu-transition);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-button.active {
+    border-bottom-color: var(--highlight-color);
+    color: var(--highlight-color);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tab-content {
+    display: none;
+    padding: 15px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Resource display */
+.resource-display {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--secondary-color);
+    padding: 5px 10px;
+    border-radius: var(--button-border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.resource-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.resource-value {
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+/* Game controls */
+.game-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.control-button {
+    background-color: var(--button-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: var(--button-border-radius);
+    padding: 8px 12px;
+    font-size: var(--font-size-small);
+    cursor: pointer;
+    transition: var(--menu-transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.control-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    :root {
+        --sidebar-width: 80%;
+        --header-height: 50px;
+    }
+    
+    #game-main.menu-open {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    #main-nav {
+        width: var(--sidebar-width);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+    
+    .tab-button {
+        padding: 10px 15px;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .section-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Dark overlay when menu is open on mobile */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    display: none;
+}
+
+.menu-overlay.active {
+    display: block;
+}

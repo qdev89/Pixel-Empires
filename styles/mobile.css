@@ -1,0 +1,582 @@
+/* Mobile-specific styles for Pixel Empires */
+
+/* Base mobile styles */
+@media screen and (max-width: 768px) {
+    /* Root variables for mobile */
+    :root {
+        --space-xs: 4px;
+        --space-sm: 6px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 24px;
+
+        --font-size-xs: 10px;
+        --font-size-sm: 12px;
+        --font-size-md: 14px;
+        --font-size-lg: 16px;
+        --font-size-xl: 18px;
+        --font-size-xxl: 20px;
+
+        --radius-sm: 4px;
+        --radius-md: 6px;
+        --radius-lg: 8px;
+    }
+    :root {
+        --font-size-small: 14px;
+        --font-size-medium: 16px;
+        --font-size-large: 18px;
+        --font-size-xlarge: 20px;
+    }
+
+    body {
+        font-size: var(--font-size-small);
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    /* Game container */
+    #game-container {
+        padding: 8px;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Header layout for mobile */
+    #game-header {
+        flex-wrap: wrap;
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+        height: auto;
+        min-height: 60px;
+    }
+
+    .header-left {
+        flex: 1;
+        order: 1;
+    }
+
+    .header-center {
+        flex: 0 0 100%;
+        order: 3;
+        margin-top: var(--space-sm);
+    }
+
+    .header-right {
+        flex: 1;
+        order: 2;
+        justify-content: flex-end;
+    }
+
+    .game-title {
+        font-size: var(--font-size-lg);
+    }
+
+    /* Resource display for mobile */
+    .resource-display {
+        gap: var(--space-xs);
+    }
+
+    .resource-item {
+        padding: var(--space-xs) var(--space-sm);
+    }
+
+    /* Game controls for mobile */
+    .game-controls {
+        gap: var(--space-xs);
+    }
+
+    .control-button {
+        min-width: 32px;
+        height: 32px;
+        padding: var(--space-xs);
+    }
+
+    /* Main navigation for mobile */
+    #main-nav {
+        width: 85%;
+        z-index: var(--z-modal);
+    }
+
+    /* Main content for mobile */
+    #game-main {
+        padding: var(--space-sm);
+    }
+
+    /* Game sections for mobile */
+    .game-section {
+        margin-bottom: var(--space-md);
+    }
+
+    .section-header {
+        padding: var(--space-sm) var(--space-md);
+    }
+
+    .section-content {
+        padding: var(--space-sm);
+    }
+
+    /* Tab navigation for mobile */
+    .tab-navigation {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: var(--space-xs);
+    }
+
+    .tab-button {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-sm);
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+
+    /* Test button for mobile */
+    #cheat-button {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        font-size: var(--font-size-medium);
+        padding: 15px;
+        margin-top: 5px;
+        border: 2px solid #2E7D32;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(76, 175, 80, 0.7);
+    }
+
+    /* Resource bar for mobile */
+    #resource-bar {
+        width: 100%;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        padding: 8px 5px;
+        background-color: var(--secondary-color);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .resource {
+        padding: 10px 8px;
+        margin: 2px;
+        background-color: var(--primary-color);
+        border-radius: 6px;
+        min-width: 80px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .resource-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 5px;
+    }
+
+    .resource-value {
+        font-size: var(--font-size-medium);
+        font-weight: bold;
+    }
+
+    /* Map container for mobile */
+    #map-container {
+        margin-bottom: 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    #map-wrapper {
+        height: 300px;
+        touch-action: manipulation;
+        position: relative;
+    }
+
+    #game-map {
+        touch-action: pan-x pan-y;
+        cursor: grab;
+    }
+
+    #game-map:active {
+        cursor: grabbing;
+    }
+
+    .map-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px;
+        background-color: var(--secondary-color);
+        border-top: 2px solid var(--border-color);
+    }
+
+    .map-button {
+        padding: 12px;
+        font-size: var(--font-size-medium);
+        margin: 3px;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 6px;
+    }
+
+    /* Map zoom controls for mobile */
+    .map-zoom-controls {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        z-index: 10;
+    }
+
+    .zoom-button {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+        background-color: var(--button-color);
+        color: white;
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Minimap for mobile */
+    #minimap-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    /* Empire section for mobile */
+    #empire-section {
+        max-height: none;
+    }
+
+    /* Tab buttons for mobile */
+    #empire-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .empire-tab-button {
+        min-width: 45%;
+        margin: 2px;
+        padding: 10px 5px;
+        font-size: var(--font-size-small);
+        border-radius: 4px;
+        top: 0;
+    }
+
+    .empire-tab-button.active {
+        border-bottom: none;
+    }
+
+    /* Research tabs for mobile */
+    #research-tabs {
+        flex-wrap: wrap;
+    }
+
+    .research-tab-button {
+        min-width: 45%;
+        margin: 2px;
+        padding: 8px 5px;
+        font-size: var(--font-size-small);
+        border-radius: 4px;
+        top: 0;
+    }
+
+    /* Card grid for mobile */
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+    }
+
+    /* Button grid for mobile */
+    .button-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-sm);
+    }
+
+    /* Info grid for mobile */
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+    }
+
+    /* Building tile for mobile */
+    .building-tile {
+        padding: var(--space-sm);
+    }
+
+    /* Action buttons for mobile */
+    .action-button {
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-sm);
+    }
+
+    /* Sub tabs for mobile */
+    .sub-tabs {
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+    }
+
+    .sub-tab-button {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: var(--font-size-xs);
+        flex: 1 0 auto;
+    }
+
+    /* Modal content for mobile */
+    .modal {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        animation: modalSlideUp 0.3s ease;
+    }
+
+    .modal-header {
+        padding: var(--space-md);
+    }
+
+    .modal-body {
+        padding: var(--space-md);
+    }
+
+    .modal-footer {
+        padding: var(--space-md);
+    }
+
+    .modal-close {
+        font-size: var(--font-size-xl);
+        padding: var(--space-sm);
+    }
+
+    /* Make buttons in modals more touch-friendly */
+    .modal-content button {
+        min-height: 44px;
+        min-width: 80px;
+        margin: var(--space-xs);
+        padding: var(--space-sm) var(--space-md);
+        font-size: var(--font-size-md);
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Form elements for mobile */
+    input[type="number"], input[type="text"], input[type="range"] {
+        font-size: var(--font-size-medium);
+        padding: 10px;
+        width: 100%;
+    }
+
+    /* Unit selection for mobile */
+    .unit-selection {
+        flex-direction: column;
+    }
+
+    .unit-input-group {
+        width: 100%;
+    }
+
+    /* Formation options for mobile */
+    .formation-options {
+        flex-direction: column;
+    }
+
+    .formation-option {
+        margin-bottom: 10px;
+    }
+
+    /* Hero container for mobile */
+    .hero-container {
+        grid-template-columns: 1fr;
+    }
+
+    /* Footer for mobile */
+    #game-footer {
+        margin-top: var(--space-md);
+        padding: var(--space-md);
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-md);
+    }
+
+    .footer-info {
+        text-align: center;
+    }
+
+    .game-version {
+        font-size: var(--font-size-sm);
+    }
+
+    .game-tagline {
+        font-size: var(--font-size-xs);
+        margin-top: var(--space-xs);
+    }
+
+    .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space-sm);
+    }
+
+    .footer-copyright {
+        margin-top: var(--space-md);
+        font-size: var(--font-size-xs);
+    }
+
+    /* Touch-friendly buttons */
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Improved scrolling */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--secondary-color);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--primary-color);
+        border-radius: 4px;
+    }
+}
+
+/* Small mobile devices */
+@media screen and (max-width: 480px) {
+    :root {
+        --font-size-small: 12px;
+        --font-size-medium: 14px;
+        --font-size-large: 16px;
+        --font-size-xlarge: 18px;
+    }
+
+    .header-left h1 {
+        font-size: var(--font-size-large);
+    }
+
+    #map-wrapper {
+        height: 250px;
+    }
+
+    .empire-tab-button {
+        min-width: 100%;
+    }
+
+    .research-tab-button {
+        min-width: 100%;
+    }
+
+    /* Simplified UI for very small screens */
+    .section-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .map-controls {
+        width: 100%;
+    }
+
+    /* Stack all grid layouts for tiny screens */
+    #buildings-grid,
+    .tavern-heroes-container,
+    .available-challenges,
+    .inventory-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    #game-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .header-left {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    .header-center {
+        flex: 1;
+    }
+
+    .header-right {
+        width: auto;
+        flex: 0 0 auto;
+    }
+
+    #map-wrapper {
+        height: 200px;
+    }
+
+    #empire-tabs {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .empire-tab-button {
+        min-width: auto;
+        flex: 0 0 auto;
+    }
+
+    #buildings-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    #building-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Touch-specific improvements */
+@media (pointer: coarse) {
+    /* Larger touch targets */
+    .map-cell {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    /* Improved touch feedback */
+    button:active {
+        transform: scale(0.95);
+    }
+
+    /* Disable hover effects that can cause issues on touch devices */
+    .building-button:hover,
+    .empire-tab-button:hover,
+    .research-tab-button:hover,
+    .map-button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}

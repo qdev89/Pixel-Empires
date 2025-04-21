@@ -75,8 +75,9 @@ class MapRenderer {
         const { tileSize, viewportWidth, viewportHeight } = this.options;
 
         // Calculate canvas size based on viewport and zoom
-        const width = viewportWidth * tileSize * this.zoom;
-        const height = viewportHeight * tileSize * this.zoom;
+        // Ensure minimum dimensions of 1x1 to avoid canvas with zero width/height
+        const width = Math.max(1, Math.floor(viewportWidth * tileSize * this.zoom));
+        const height = Math.max(1, Math.floor(viewportHeight * tileSize * this.zoom));
 
         // Set canvas dimensions
         this.canvas.width = width;
@@ -93,6 +94,9 @@ class MapRenderer {
         this.fogCanvas.style.height = `${height}px`;
         this.overlayCanvas.style.width = `${width}px`;
         this.overlayCanvas.style.height = `${height}px`;
+
+        // Log canvas dimensions for debugging
+        console.debug(`Canvas resized to ${width}x${height}px`);
     }
 
     /**
@@ -439,40 +443,53 @@ class MapRenderer {
         }
 
         // Add fog border effect around the edges of explored areas
-        this.addFogBorderEffect(startX, startY, endX, endY, tileSize);
+        // Only if the canvas has been properly initialized
+        if (this.fogCanvas && this.fogCanvas.width > 0 && this.fogCanvas.height > 0) {
+            this.addFogBorderEffect(startX, startY, endX, endY, tileSize);
+        }
     }
 
     /**
      * Add border effect to the edges of explored areas
      */
     addFogBorderEffect(startX, startY, endX, endY, tileSize) {
-        // Create a temporary canvas for the border effect
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = this.fogCanvas.width;
-        tempCanvas.height = this.fogCanvas.height;
-        const tempCtx = tempCanvas.getContext('2d');
+        // Check if fog canvas has valid dimensions
+        if (!this.fogCanvas || this.fogCanvas.width <= 0 || this.fogCanvas.height <= 0) {
+            return; // Skip if canvas dimensions are invalid
+        }
 
-        // Copy the current fog canvas to the temp canvas
-        tempCtx.drawImage(this.fogCanvas, 0, 0);
+        try {
+            // Create a temporary canvas for the border effect
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = this.fogCanvas.width;
+            tempCanvas.height = this.fogCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
 
-        // Set composite operation to only draw where there's already content
-        tempCtx.globalCompositeOperation = 'source-atop';
+            // Copy the current fog canvas to the temp canvas
+            tempCtx.drawImage(this.fogCanvas, 0, 0);
 
-        // Add a subtle glow effect
-        const gradient = tempCtx.createRadialGradient(
-            this.fogCanvas.width / 2, this.fogCanvas.height / 2,
-            0,
-            this.fogCanvas.width / 2, this.fogCanvas.height / 2,
-            this.fogCanvas.width / 2
-        );
-        gradient.addColorStop(0, 'rgba(30, 30, 60, 0.1)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+            // Set composite operation to only draw where there's already content
+            tempCtx.globalCompositeOperation = 'source-atop';
 
-        tempCtx.fillStyle = gradient;
-        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            // Add a subtle glow effect
+            const gradient = tempCtx.createRadialGradient(
+                this.fogCanvas.width / 2, this.fogCanvas.height / 2,
+                0,
+                this.fogCanvas.width / 2, this.fogCanvas.height / 2,
+                this.fogCanvas.width / 2
+            );
+            gradient.addColorStop(0, 'rgba(30, 30, 60, 0.1)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
 
-        // Draw the temp canvas back to the fog canvas
-        this.fogCtx.drawImage(tempCanvas, 0, 0);
+            tempCtx.fillStyle = gradient;
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Draw the temp canvas back to the fog canvas
+            this.fogCtx.drawImage(tempCanvas, 0, 0);
+        } catch (error) {
+            console.warn('Error applying fog border effect:', error.message);
+            // Continue without the border effect
+        }
     }
 
     /**

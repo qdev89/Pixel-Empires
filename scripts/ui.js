@@ -78,7 +78,7 @@ class UIManager {
             research: {
                 currentResearch: document.getElementById('current-research'),
                 progressBar: document.getElementById('research-progress-bar'),
-                tabs: document.getElementById('research-tabs'),
+                tabs: document.querySelector('.sub-tabs'),
                 options: document.getElementById('research-options')
             }
         };
@@ -386,8 +386,19 @@ class UIManager {
      * Initialize research UI
      */
     initializeResearchUI() {
+        // Check if research tabs element exists
+        if (!this.elements.research.tabs) {
+            console.warn('Research tabs element not found. Skipping research UI initialization.');
+            return;
+        }
+
         // Set up research tab buttons
-        const tabButtons = this.elements.research.tabs.querySelectorAll('.research-tab-button');
+        const tabButtons = this.elements.research.tabs.querySelectorAll('.sub-tab-button');
+
+        if (tabButtons.length === 0) {
+            console.warn('No research tab buttons found. Skipping research UI initialization.');
+            return;
+        }
 
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {

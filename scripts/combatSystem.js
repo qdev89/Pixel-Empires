@@ -317,9 +317,9 @@ class CombatSystem {
         }
 
         // Apply terrain-specific weather effects if applicable
-        const terrain = this.getTerrainAtLocation(enemyCamp.x, enemyCamp.y);
-        if (weatherEffect.terrainEffects && weatherEffect.terrainEffects[terrain]) {
-            const terrainWeatherEffect = weatherEffect.terrainEffects[terrain];
+        const terrainType = this.getTerrainAtLocation(enemyCamp.x, enemyCamp.y);
+        if (weatherEffect.terrainEffects && weatherEffect.terrainEffects[terrainType]) {
+            const terrainWeatherEffect = weatherEffect.terrainEffects[terrainType];
             let terrainWeatherAdvantage = 0;
             let effectCount = 0;
 

@@ -2,256 +2,437 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
     <title>Pixel Empires</title>
-    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/modern-ui.css">
+    <link rel="stylesheet" href="styles/mobile.css">
 </head>
 <body>
     <div id="game-container">
         <header id="game-header">
             <div class="header-left">
-                <h1>Pixel Empires</h1>
+                <button id="main-menu-button" class="control-button" aria-label="Open menu">☰</button>
+                <h1 class="game-title">Pixel Empires</h1>
             </div>
+
             <div class="header-center">
-                <div id="game-info">
-                    <div id="game-timer">00:00:00</div>
-                    <div id="online-status" class="online-status">Online <span class="status-indicator"></span></div>
-                </div>
+                <div id="game-timer" class="game-timer">00:00:00</div>
+                <div id="online-status" class="online-status">Online <span class="status-indicator"></span></div>
             </div>
+
             <div class="header-right">
-                <div id="resource-bar">
-                    <div class="resource">
+                <div class="resource-display">
+                    <div class="resource-item" title="Food">
                         <img src="assets/icons/food.png" alt="Food" class="resource-icon">
-                        <span id="food-count">0</span>
+                        <span id="food-count" class="resource-value">0</span>
                     </div>
-                    <div class="resource">
+                    <div class="resource-item" title="Ore">
                         <img src="assets/icons/ore.png" alt="Ore" class="resource-icon">
-                        <span id="ore-count">0</span>
+                        <span id="ore-count" class="resource-value">0</span>
                     </div>
                 </div>
-                <div id="game-controls">
-                    <button id="chat-button" class="control-button chat-button">Chat</button>
-                    <button id="save-button" class="control-button">Save</button>
-                    <button id="load-button" class="control-button">Load</button>
-                    <button id="speed-button" class="control-button speed-button">Speed: 1.0x</button>
-                    <button id="cheat-button" class="control-button cheat-button">Test Mode (Unlimited Resources)</button>
+
+                <div class="game-controls">
+                    <button id="chat-button" class="control-button" title="Chat">💬</button>
+                    <button id="speed-button" class="control-button" title="Game Speed">⏱️</button>
+                    <button id="save-button" class="control-button" title="Save Game">💾</button>
+                    <button id="cheat-button" class="control-button primary-button" title="Test Mode">⚙️</button>
                 </div>
             </div>
         </header>
 
+        <!-- Main Navigation Menu -->
+        <nav id="main-nav">
+            <div class="menu-header">
+                <h2 class="menu-title">Game Menu</h2>
+                <button id="close-menu-button" class="control-button" aria-label="Close menu">&times;</button>
+            </div>
+
+            <div class="menu-category">
+                <h3 class="menu-category-title">🏛️ EMPIRE</h3>
+                <div class="menu-item active" data-tab="buildings">
+                    <span class="menu-item-icon">🏠</span> Buildings
+                </div>
+                <div class="menu-item" data-tab="military">
+                    <span class="menu-item-icon">⚔️</span> Military
+                </div>
+                <div class="menu-item" data-tab="research">
+                    <span class="menu-item-icon">📚</span> Research
+                </div>
+            </div>
+
+            <div class="menu-category">
+                <h3 class="menu-category-title">🗺️ WORLD</h3>
+                <div class="menu-item" data-tab="map">
+                    <span class="menu-item-icon">🧭</span> World Map
+                </div>
+                <div class="menu-item" data-tab="diplomacy">
+                    <span class="menu-item-icon">🤝</span> Diplomacy
+                </div>
+                <div class="menu-item" data-tab="reports">
+                    <span class="menu-item-icon">📊</span> Reports
+                </div>
+            </div>
+
+            <div class="menu-category">
+                <h3 class="menu-category-title">⚙️ GAME</h3>
+                <div class="menu-item" id="menu-save">
+                    <span class="menu-item-icon">💾</span> Save Game
+                </div>
+                <div class="menu-item" id="menu-load">
+                    <span class="menu-item-icon">📂</span> Load Game
+                </div>
+                <div class="menu-item" id="menu-settings">
+                    <span class="menu-item-icon">⚙️</span> Settings
+                </div>
+            </div>
+
+            <div class="menu-footer">
+                <div class="game-version">Pixel Empires v0.2</div>
+                <div class="menu-links">
+                    <a href="#" id="menu-help">Help</a> |
+                    <a href="#" id="menu-credits">Credits</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Menu Overlay for Mobile -->
+        <div class="menu-overlay"></div>
+
         <main id="game-main">
+            <!-- World Map Section -->
             <div id="map-container" class="game-section">
                 <div class="section-header">
-                    <h3>World Map</h3>
-                    <div class="map-controls">
-                        <button id="zoom-in" class="map-button">+</button>
-                        <button id="zoom-out" class="map-button">-</button>
-                        <button id="reset-zoom" class="map-button">Reset</button>
-                        <button id="center-map" class="map-button">Center</button>
-                        <button id="claim-territory" class="map-button claim-button">Claim Territory</button>
+                    <h3 class="section-title">🏔️ World Map</h3>
+                    <div class="section-actions">
+                        <div class="map-controls">
+                            <button id="zoom-in" class="control-button" title="Zoom In">+</button>
+                            <button id="zoom-out" class="control-button" title="Zoom Out">-</button>
+                            <button id="center-map" class="control-button" title="Center Map">🌐</button>
+                            <button id="claim-territory" class="control-button primary-button" title="Claim Territory">🚩 Claim</button>
+                        </div>
                     </div>
                 </div>
-                <div id="map-wrapper">
-                    <div id="game-map">
-                        <!-- Map will be rendered here -->
-                    </div>
-                    <div id="minimap-container">
-                        <div id="minimap"></div>
-                        <div id="minimap-viewport"></div>
+                <div class="section-content">
+                    <div id="map-wrapper" class="map-wrapper">
+                        <div id="game-map" class="game-map">
+                            <!-- Map will be rendered here -->
+                        </div>
+                        <div id="minimap-container" class="minimap-container">
+                            <div id="minimap" class="minimap"></div>
+                            <div id="minimap-viewport" class="minimap-viewport"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div id="game-content">
                 <!-- Single scrollable page layout as per user preference -->
+                <!-- Empire Section -->
                 <div id="empire-section" class="game-section">
                     <div class="section-header">
-                        <h3>Your Empire</h3>
-                    </div>
-
-                    <!-- Empire Overview - Always visible -->
-                    <div id="empire-overview">
-                        <div id="unit-stats">
-                            <div class="unit-stat">
-                                <div class="unit-icon spearman">S</div>
-                                <span id="spearman-count">0</span>
-                            </div>
-                            <div class="unit-stat">
-                                <div class="unit-icon archer">A</div>
-                                <span id="archer-count">0</span>
-                            </div>
-                            <div class="unit-stat">
-                                <div class="unit-icon cavalry">C</div>
-                                <span id="cavalry-count">0</span>
-                            </div>
-                            <div id="unit-upkeep" class="unit-upkeep">
-                                <div class="upkeep-icon food-icon">F</div>
-                                <span>Upkeep: <span id="food-upkeep">0</span>/min</span>
+                        <h3 class="section-title">🏛️ Your Empire</h3>
+                        <div class="section-actions">
+                            <div id="unit-stats" class="unit-stats">
+                                <div class="unit-stat" title="Spearmen">
+                                    <div class="unit-icon spearman">🗡️</div>
+                                    <span id="spearman-count" class="unit-count">0</span>
+                                </div>
+                                <div class="unit-stat" title="Archers">
+                                    <div class="unit-icon archer">🏹</div>
+                                    <span id="archer-count" class="unit-count">0</span>
+                                </div>
+                                <div class="unit-stat" title="Cavalry">
+                                    <div class="unit-icon cavalry">🐴</div>
+                                    <span id="cavalry-count" class="unit-count">0</span>
+                                </div>
+                                <div id="unit-upkeep" class="unit-upkeep" title="Food Upkeep">
+                                    <div class="upkeep-icon food-icon">🍖</div>
+                                    <span>Upkeep: <span id="food-upkeep">0</span>/min</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Empire Tabs Navigation -->
-                    <div id="empire-tabs">
-                        <button class="empire-tab-button active" data-tab="buildings"><div class="tab-icon buildings"></div>Buildings</button>
-                        <button class="empire-tab-button" data-tab="military"><div class="tab-icon military"></div>Military</button>
-                        <button class="empire-tab-button" data-tab="research"><div class="tab-icon research"></div>Research</button>
-                        <button class="empire-tab-button" data-tab="map"><div class="tab-icon map"></div>Map</button>
-                        <button class="empire-tab-button" data-tab="diplomacy"><div class="tab-icon diplomacy"></div>Diplomacy</button>
-                        <button class="empire-tab-button" data-tab="reports"><div class="tab-icon reports"></div>Reports</button>
+                    <div class="tab-navigation">
+                        <button class="tab-button active" data-tab="buildings">
+                            <span class="tab-icon">🏠</span> Buildings
+                        </button>
+                        <button class="tab-button" data-tab="military">
+                            <span class="tab-icon">⚔️</span> Military
+                        </button>
+                        <button class="tab-button" data-tab="research">
+                            <span class="tab-icon">📚</span> Research
+                        </button>
+                        <button class="tab-button" data-tab="map">
+                            <span class="tab-icon">🧭</span> Map
+                        </button>
+                        <button class="tab-button" data-tab="diplomacy">
+                            <span class="tab-icon">🤝</span> Diplomacy
+                        </button>
+                        <button class="tab-button" data-tab="reports">
+                            <span class="tab-icon">📊</span> Reports
+                        </button>
                     </div>
 
                     <!-- Tab Content -->
-                    <div id="empire-tab-content">
-                        <!-- Buildings Tab -->
-                        <div id="buildings-tab" class="tab-content active">
-                            <div class="tab-section">
-                                <h4>City Buildings</h4>
-                                <div id="buildings-grid">
-                                    <!-- Buildings will be rendered here -->
+                    <div class="section-content">
+                        <div id="empire-tab-content">
+                            <!-- Buildings Tab -->
+                            <div id="buildings-tab" class="tab-content active">
+                                <div class="buildings-container">
+                                    <div class="tab-section buildings-section">
+                                        <h4><span class="section-icon">🏠</span> City Buildings</h4>
+                                        <div id="buildings-grid" class="card-grid">
+                                            <!-- Buildings will be rendered here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">🏡</div>
+                                                <div class="info-content">No buildings constructed yet. Start building to grow your empire!</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section construction-section">
+                                        <h4><span class="section-icon">🛠️</span> Construction</h4>
+                                        <div id="building-buttons" class="button-grid">
+                                            <!-- Building buttons will be generated here -->
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="tab-section">
-                                <h4>Construction</h4>
-                                <div id="building-buttons">
-                                    <!-- Building buttons will be generated here -->
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Military Tab -->
-                        <div id="military-tab" class="tab-content">
-                            <div class="tab-section">
-                                <h4>Training</h4>
-                                <div id="training-controls">
-                                    <!-- Training controls will be generated here -->
+                            <!-- Military Tab -->
+                            <div id="military-tab" class="tab-content">
+                                <div class="military-container">
+                                    <div class="tab-section training-section">
+                                        <h4><span class="section-icon">💪</span> Training</h4>
+                                        <div id="training-controls" class="button-grid">
+                                            <!-- Training controls will be generated here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">💂‍♂️</div>
+                                                <div class="info-content">Build a Barracks to train military units.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section combat-section">
+                                        <h4><span class="section-icon">⚔️</span> Combat</h4>
+                                        <div class="action-buttons">
+                                            <button id="attack-button" class="primary-button" disabled>💥 Attack Enemy</button>
+                                        </div>
+                                        <div class="combat-info">
+                                            <div class="info-card">
+                                                <div class="info-header">
+                                                    <h5>Combat Status</h5>
+                                                </div>
+                                                <div class="info-content">No active battles. Train units to prepare for combat.</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="tab-section">
-                                <h4>Combat</h4>
-                                <button id="attack-button" disabled>Attack Enemy</button>
-                            </div>
-                        </div>
 
-                        <!-- Research Tab -->
-                        <div id="research-tab" class="tab-content">
-                            <div class="tab-section">
-                                <h4>Current Research</h4>
-                                <div id="research-status">
-                                    <div id="current-research">No research in progress</div>
-                                    <div id="research-progress-container" class="progress-container">
-                                        <div id="research-progress-bar" class="progress-bar"></div>
+                            <!-- Research Tab -->
+                            <div id="research-tab" class="tab-content">
+                                <div class="research-container">
+                                    <div class="tab-section current-research-section">
+                                        <h4><span class="section-icon">🔬</span> Current Research</h4>
+                                        <div id="research-status" class="status-card">
+                                            <div id="current-research">No research in progress</div>
+                                            <div id="research-progress-container" class="progress-container">
+                                                <div id="research-progress-bar" class="progress-bar"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section research-projects-section">
+                                        <h4><span class="section-icon">📚</span> Research Projects</h4>
+                                        <div class="sub-tabs">
+                                            <button class="sub-tab-button active" data-category="MILITARY">⚔️ Military</button>
+                                            <button class="sub-tab-button" data-category="ECONOMIC">💰 Economic</button>
+                                            <button class="sub-tab-button" data-category="DEFENSIVE">🛡️ Defensive</button>
+                                            <button class="sub-tab-button" data-category="DIPLOMATIC">🤝 Diplomatic</button>
+                                            <button class="sub-tab-button" data-category="EXPLORATION">🧭 Exploration</button>
+                                        </div>
+                                        <div id="research-options" class="card-grid">
+                                            <!-- Research options will be generated here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">🔭</div>
+                                                <div class="info-content">Build a Library to unlock research options.</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-section">
-                                <h4>Research Projects</h4>
-                                <div id="research-tabs">
-                                    <button class="research-tab-button active" data-category="MILITARY">Military</button>
-                                    <button class="research-tab-button" data-category="ECONOMIC">Economic</button>
-                                    <button class="research-tab-button" data-category="DEFENSIVE">Defensive</button>
-                                    <button class="research-tab-button" data-category="DIPLOMATIC">Diplomatic</button>
-                                    <button class="research-tab-button" data-category="EXPLORATION">Exploration</button>
-                                </div>
-                                <div id="research-options">
-                                    <!-- Research options will be generated here -->
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Diplomacy Tab -->
-                        <div id="diplomacy-tab" class="tab-content">
-                            <div class="tab-section">
-                                <h4>Diplomatic Relations</h4>
-                                <div id="diplomatic-relations">
-                                    <!-- Diplomatic relations will be displayed here -->
-                                    <div class="no-relations-message">No diplomatic relations established yet.</div>
+                            <!-- Diplomacy Tab -->
+                            <div id="diplomacy-tab" class="tab-content">
+                                <div class="diplomacy-container">
+                                    <div class="tab-section relations-section">
+                                        <h4><span class="section-icon">👨‍💼</span> Diplomatic Relations</h4>
+                                        <div id="diplomatic-relations" class="card-grid">
+                                            <!-- Diplomatic relations will be displayed here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">👤</div>
+                                                <div class="info-content">No diplomatic relations established yet.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section factions-section">
+                                        <h4><span class="section-icon">🌎</span> Available Factions</h4>
+                                        <div id="available-factions" class="card-grid">
+                                            <!-- Available factions will be displayed here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">🌍</div>
+                                                <div class="info-content">Explore the map to discover other factions.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section actions-section">
+                                        <h4><span class="section-icon">📃</span> Diplomatic Actions</h4>
+                                        <div id="diplomatic-actions" class="button-grid">
+                                            <button id="establish-relations-button" class="action-button" disabled>👋 Establish Relations</button>
+                                            <button id="propose-alliance-button" class="action-button" disabled>🤝 Propose Alliance</button>
+                                            <button id="declare-war-button" class="action-button danger" disabled>⚔️ Declare War</button>
+                                            <button id="send-emissary-button" class="action-button" disabled>📩 Send Emissary</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="tab-section">
-                                <h4>Available Factions</h4>
-                                <div id="available-factions">
-                                    <!-- Available factions will be displayed here -->
-                                </div>
-                            </div>
-                            <div class="tab-section">
-                                <h4>Diplomatic Actions</h4>
-                                <div id="diplomatic-actions">
-                                    <button id="establish-relations-button" class="diplomatic-button" disabled>Establish Relations</button>
-                                    <button id="propose-alliance-button" class="diplomatic-button" disabled>Propose Alliance</button>
-                                    <button id="declare-war-button" class="diplomatic-button" disabled>Declare War</button>
-                                    <button id="send-emissary-button" class="diplomatic-button" disabled>Send Emissary</button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Map Tab -->
-                        <div id="map-tab" class="tab-content">
-                            <div class="tab-section">
-                                <h4>World Map</h4>
-                                <div id="enhanced-map-container">
-                                    <div id="enhanced-map-wrapper">
-                                        <div id="enhanced-map"></div>
+                            <!-- Map Tab -->
+                            <div id="map-tab" class="tab-content">
+                                <div class="map-container">
+                                    <div class="tab-section map-section">
+                                        <div class="map-header">
+                                            <h4><span class="section-icon">🏔️</span> World Map</h4>
+                                            <div class="map-quick-controls">
+                                                <button id="enhanced-zoom-in" class="control-button" title="Zoom In">+</button>
+                                                <button id="enhanced-zoom-out" class="control-button" title="Zoom Out">-</button>
+                                                <button id="enhanced-center-map" class="control-button" title="Center Map">🌐</button>
+                                            </div>
+                                        </div>
+                                        <div id="enhanced-map-container" class="map-display">
+                                            <div id="enhanced-map-wrapper" class="map-display-inner">
+                                                <div id="enhanced-map"></div>
+                                            </div>
+                                            <div id="enhanced-minimap-container" class="minimap-display">
+                                                <div id="enhanced-minimap"></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div id="enhanced-minimap-container">
-                                        <div id="enhanced-minimap"></div>
+                                    <div class="map-controls-panel">
+                                        <div class="tab-section controls-section">
+                                            <h4><span class="section-icon">🕹️</span> Map Controls</h4>
+                                            <div id="map-controls" class="button-grid">
+                                                <button id="toggle-fog" class="control-button" title="Toggle Fog of War">🌁 Toggle Fog</button>
+                                                <button id="toggle-grid" class="control-button" title="Toggle Grid">🖱️ Toggle Grid</button>
+                                                <button id="toggle-resources" class="control-button" title="Show Resources">💰 Show Resources</button>
+                                                <button id="toggle-territories" class="control-button" title="Show Territories">🇺🇸 Show Territories</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section location-section">
+                                        <h4><span class="section-icon">📍</span> Location Information</h4>
+                                        <div id="location-info" class="info-grid">
+                                            <div class="info-card">
+                                                <div class="info-header">
+                                                    <h5>🌾 Terrain</h5>
+                                                </div>
+                                                <div id="selected-terrain" class="info-content">No terrain selected</div>
+                                            </div>
+                                            <div class="info-card">
+                                                <div class="info-header">
+                                                    <h5>✨ Special Location</h5>
+                                                </div>
+                                                <div id="selected-location" class="info-content">No special location selected</div>
+                                            </div>
+                                        </div>
+                                        <div id="location-actions" class="button-grid">
+                                            <button id="explore-location" class="action-button" disabled>🔎 Explore</button>
+                                            <button id="interact-location" class="action-button" disabled>👋 Interact</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-section">
-                                <h4>Map Controls</h4>
-                                <div id="map-controls">
-                                    <button id="enhanced-zoom-in" class="map-control-button">Zoom In</button>
-                                    <button id="enhanced-zoom-out" class="map-control-button">Zoom Out</button>
-                                    <button id="enhanced-center-map" class="map-control-button">Center Map</button>
-                                    <button id="toggle-fog" class="map-control-button">Toggle Fog of War</button>
-                                    <button id="toggle-grid" class="map-control-button">Toggle Grid</button>
-                                </div>
-                            </div>
-                            <div class="tab-section">
-                                <h4>Location Information</h4>
-                                <div id="location-info">
-                                    <div id="terrain-info">
-                                        <h5>Terrain</h5>
-                                        <div id="selected-terrain">No terrain selected</div>
-                                    </div>
-                                    <div id="special-location-info">
-                                        <h5>Special Location</h5>
-                                        <div id="selected-location">No special location selected</div>
-                                    </div>
-                                    <div id="location-actions">
-                                        <button id="explore-location" class="location-action-button" disabled>Explore</button>
-                                        <button id="interact-location" class="location-action-button" disabled>Interact</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Reports Tab -->
-                        <div id="reports-tab" class="tab-content">
-                            <div class="tab-section">
-                                <h4>Combat Reports</h4>
-                                <div id="combat-reports">
-                                    <!-- Combat reports will be displayed here -->
+                            <!-- Reports Tab -->
+                            <div id="reports-tab" class="tab-content">
+                                <div class="reports-container">
+                                    <div class="tab-section combat-reports-section">
+                                        <h4><span class="section-icon">⚔️</span> Combat Reports</h4>
+                                        <div id="combat-reports" class="reports-list">
+                                            <!-- Combat reports will be displayed here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">📃</div>
+                                                <div class="info-content">No combat reports available yet.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section resource-reports-section">
+                                        <h4><span class="section-icon">📊</span> Resource Reports</h4>
+                                        <div id="resource-reports" class="reports-list">
+                                            <!-- Resource reports will be displayed here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">📈</div>
+                                                <div class="info-content">No resource reports available yet.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-section event-reports-section">
+                                        <h4><span class="section-icon">📆</span> Event Reports</h4>
+                                        <div id="event-reports" class="reports-list">
+                                            <!-- Event reports will be displayed here -->
+                                            <div class="empty-state">
+                                                <div class="info-icon">📅</div>
+                                                <div class="info-content">No event reports available yet.</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 </div>
 
+                <!-- Events Section -->
                 <div id="events-section" class="game-section">
                     <div class="section-header">
-                        <h3>Recent Events</h3>
+                        <h3 class="section-title"><span class="section-icon">📅</span> Recent Events</h3>
+                        <div class="section-actions">
+                            <button id="clear-events" class="control-button" title="Clear Events">🚮 Clear</button>
+                            <button id="filter-events" class="control-button" title="Filter Events">🔍 Filter</button>
+                        </div>
                     </div>
-                    <div id="event-history">
-                        <!-- Event history will be displayed here -->
+                    <div class="section-content">
+                        <div id="event-history" class="event-list">
+                            <!-- Event history will be displayed here -->
+                            <div class="empty-state">
+                                <div class="info-icon">📆</div>
+                                <div class="info-content">No events have occurred yet. As you play, important events will be displayed here.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
 
         <footer id="game-footer">
-            <p>Pixel Empires v0.3.1 - A Retro Strategy Game</p>
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="game-version">Pixel Empires v0.2</div>
+                    <div class="game-tagline">A Real-Time Strategy Game</div>
+                </div>
+                <div class="footer-links">
+                    <a href="#" id="show-credits" title="View Credits">Credits</a>
+                    <a href="#" id="show-help" title="View Help">Help</a>
+                    <a href="#" id="show-settings" title="Game Settings">Settings</a>
+                    <a href="#" id="show-feedback" title="Send Feedback">Feedback</a>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                &copy; 2023 Pixel Empires - All Rights Reserved
+            </div>
         </footer>
 
         <!-- Event Modal -->
@@ -503,5 +684,7 @@
     <script src="scripts/weather-system.js"></script>
     <script src="scripts/combat-ui-enhancements.js"></script>
     <script src="scripts/main.js"></script>
+    <script src="scripts/mobile.js"></script>
+    <script src="scripts/ui-layout.js"></script>
 </body>
 </html>

@@ -22,10 +22,10 @@
     --button-hover: #1a4980;
     --food-color: #4a4;
     --ore-color: #a44;
-    --font-size-small: 14px; /* Increased from 12px */
-    --font-size-medium: 16px; /* Increased from 14px */
-    --font-size-large: 18px; /* Increased from 16px */
-    --font-size-xlarge: 20px; /* Increased from 18px */
+    --font-size-small: 16px; /* Increased for better readability */
+    --font-size-medium: 18px; /* Increased for better readability */
+    --font-size-large: 20px; /* Increased for better readability */
+    --font-size-xlarge: 22px; /* Increased for better readability */
 }
 
 body {
@@ -93,41 +93,49 @@ body {
     letter-spacing: 1px;
 }
 
-/* Resource bar - smaller as per user preference */
+/* Resource bar - improved visibility while keeping compact */
 #resource-bar {
     display: flex;
-    gap: 6px;
+    gap: 10px;
 }
 
 .resource {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 6px;
     background-color: var(--secondary-color);
-    padding: 3px 5px;
-    border: 1px solid var(--border-color);
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    font-size: var(--font-size-small);
+    padding: 6px 10px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: var(--font-size-medium);
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.resource:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+    border-color: var(--highlight-color);
 }
 
 .resource-icon {
-    width: 12px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
 }
 
 /* Fallback resource icons */
 div.resource-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     color: white;
     font-weight: bold;
-    font-size: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Main game area */
@@ -254,25 +262,35 @@ div.resource-icon {
 }
 
 .control-button {
-    padding: 5px 8px;
+    padding: 8px 12px;
     background-color: var(--button-color);
     color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-medium);
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    margin: 4px;
+    min-width: 120px;
+    text-align: center;
+    letter-spacing: 0.5px;
 }
 
 .control-button:hover {
     background-color: var(--button-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-color: var(--highlight-color);
 }
 
-.cheat-button {
+.control-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#cheat-button, .cheat-button {
     background-color: #4CAF50; /* Green color for test mode */
     border-color: #2E7D32;
     color: white;
@@ -1477,32 +1495,40 @@ div.resource-icon {
 
 .empire-tab-button {
     flex: 1;
-    min-width: 80px;
+    min-width: 100px;
     background-color: var(--button-color);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     color: var(--text-color);
-    padding: 8px 10px;
+    padding: 12px 15px;
     font-family: 'Press Start 2P', cursive;
-    font-size: var(--font-size-small); /* Use variable instead of hardcoded value */
+    font-size: var(--font-size-medium);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px 6px 0 0;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
+    z-index: 1;
 }
 
 .empire-tab-button:hover {
     background-color: var(--button-hover);
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .empire-tab-button.active {
     background-color: var(--accent-color);
     border-color: #ff6b81;
     color: white;
+    z-index: 2;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid var(--accent-color);
 }
 
 .tab-icon {
@@ -1659,37 +1685,46 @@ div.resource-icon {
 
 #building-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Changed from 2 to 3 columns */
-    gap: 6px;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns for better layout */
+    gap: 10px;
     overflow-y: auto;
-    max-height: 150px; /* Reduced height */
+    max-height: 200px; /* Increased height for better visibility */
 }
 
 .building-button {
     background-color: var(--button-color);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     color: var(--text-color);
-    padding: 8px;
+    padding: 10px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
+    font-size: var(--font-size-small);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
-    border-radius: 4px;
+    gap: 10px;
+    border-radius: 6px;
     transition: all 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .building-button:hover {
     background-color: var(--button-hover);
     border-color: var(--highlight-color);
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.building-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .building-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-color: var(--border-color);
 }
 
 .building-button-icon {
@@ -1836,31 +1871,33 @@ div.resource-icon {
 
 .train-button {
     background-color: var(--button-color);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     color: var(--text-color);
-    padding: 8px 12px;
+    padding: 10px 15px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
+    font-size: var(--font-size-small);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .unit-icon-small {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    font-size: 10px;
+    font-size: var(--font-size-small);
     font-weight: bold;
     color: white;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .unit-icon-small.SPEARMAN {
@@ -1877,15 +1914,22 @@ div.resource-icon {
 
 .train-button:hover {
     background-color: var(--button-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    border-color: var(--highlight-color);
+}
+
+.train-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .train-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
-    box-shadow: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-color: var(--border-color);
 }
 
 /* Training queue display */
@@ -1977,28 +2021,37 @@ div.resource-icon {
 
 .research-tab-button {
     flex: 1;
-    min-width: 100px;
+    min-width: 120px;
     background-color: var(--button-color);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     color: var(--text-color);
-    padding: 6px 4px;
+    padding: 10px 12px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 9px;
+    font-size: var(--font-size-small);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px 6px 0 0;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
+    z-index: 1;
+    text-align: center;
 }
 
 .research-tab-button:hover {
     background-color: var(--button-hover);
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .research-tab-button.active {
     background-color: var(--accent-color);
     border-color: #ff6b81;
     color: white;
+    z-index: 2;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid var(--accent-color);
 }
 
 #research-options {
@@ -2093,24 +2146,38 @@ div.resource-icon {
 
 #attack-button {
     background-color: #881111;
-    border: 2px solid #aa2222;
+    border: 3px solid #aa2222;
     color: #fff;
-    padding: 12px 18px;
+    padding: 15px 25px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 14px;
+    font-size: var(--font-size-large);
     cursor: pointer;
-    margin-bottom: 15px;
-    align-self: center;
-    border-radius: 4px;
+    margin: 15px auto;
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #attack-button:hover {
     background-color: #aa2222;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+#attack-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #attack-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 #combat-reports {
@@ -4879,15 +4946,21 @@ div.resource-icon {
 
 /* Footer */
 #game-footer {
-    margin-top: 15px;
+    margin-top: 20px;
     text-align: center;
-    font-size: 8px;
-    color: var(--text-color);
-    padding: 10px;
-    border-top: 1px solid var(--border-color);
+    font-size: var(--font-size-medium);
+    color: var(--highlight-color);
+    padding: 15px;
+    border-top: 2px solid var(--highlight-color);
     background-color: var(--primary-color);
     border-radius: 8px;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#game-footer p {
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Pixel art rendering */
@@ -5448,23 +5521,34 @@ img {
 }
 
 .hero-tab {
-    padding: 5px 10px;
+    padding: 10px 15px;
     background-color: var(--secondary-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px 6px 0 0;
     cursor: pointer;
-    font-size: var(--font-size-small);
+    font-size: var(--font-size-medium);
     color: var(--text-color);
     transition: all 0.2s ease;
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
+    z-index: 1;
+    box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .hero-tab:hover {
     background-color: var(--button-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .hero-tab.active {
     background-color: var(--accent-color);
     border-color: var(--highlight-color);
+    color: white;
+    z-index: 2;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+    border-bottom: 2px solid var(--accent-color);
 }
 
 .hero-content {

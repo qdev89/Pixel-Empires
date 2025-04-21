@@ -44,6 +44,10 @@ class EventsUI {
 
         if (!this.eventsSection || !this.eventHistory) return;
 
+        // Get the section content container (parent of event history)
+        const sectionContent = this.eventHistory.parentNode;
+        if (!sectionContent) return;
+
         // Create events container
         this.activeEventsContainer = document.createElement('div');
         this.activeEventsContainer.id = 'active-events';
@@ -54,9 +58,9 @@ class EventsUI {
         this.activeChallengesContainer.id = 'active-challenges';
         this.activeChallengesContainer.className = 'active-challenges';
 
-        // Add containers to events section
-        this.eventsSection.insertBefore(this.activeEventsContainer, this.eventHistory);
-        this.eventsSection.insertBefore(this.activeChallengesContainer, this.eventHistory);
+        // Add containers to section content before event history
+        sectionContent.insertBefore(this.activeEventsContainer, this.eventHistory);
+        sectionContent.insertBefore(this.activeChallengesContainer, this.eventHistory);
 
         // Create section headers
         const activeEventsHeader = document.createElement('div');

@@ -9,7 +9,11 @@ class WeatherSystem {
      */
     constructor(gameState) {
         this.gameState = gameState;
-        this.weatherEffects = gameState.config.COMBAT.WEATHER_EFFECTS;
+
+        // Use config if available, otherwise use default weather effects
+        this.weatherEffects = (gameState.config && gameState.config.COMBAT && gameState.config.COMBAT.WEATHER_EFFECTS) ?
+            gameState.config.COMBAT.WEATHER_EFFECTS : this.getDefaultWeatherEffects();
+
         this.currentWeather = 'clear'; // Default weather
         this.weatherDuration = 0; // Duration of current weather in seconds
         this.weatherChangeInterval = 600; // Weather changes every 10 minutes by default
@@ -21,6 +25,60 @@ class WeatherSystem {
 
         // Set initial weather
         this.changeWeather();
+    }
+
+    /**
+     * Get default weather effects if config is not available
+     * @returns {Object} Default weather effects
+     */
+    getDefaultWeatherEffects() {
+        return {
+            clear: {
+                name: "Clear",
+                description: "Clear weather with no special effects",
+                attack: 1.0,
+                defense: 1.0,
+                movementSpeed: 1.0,
+                unitEffects: {},
+                visualEffect: "clear_sky",
+                probability: 0.5 // 50% chance of clear weather
+            },
+            rain: {
+                name: "Rain",
+                description: "Rainy weather that reduces archer effectiveness",
+                attack: 0.9,
+                defense: 1.0,
+                movementSpeed: 0.8,
+                unitEffects: {
+                    ARCHER: { attack: 0.7, range: 0.8 }, // Archers get -30% attack and -20% range
+                    CAVALRY: { speed: 0.8 }             // Cavalry gets -20% speed
+                },
+                terrainEffects: {
+                    grass: { movementSpeed: 0.7 },  // Grass becomes muddy
+                    plains: { movementSpeed: 0.7 }, // Plains become muddy
+                    forest: { defense: 1.1 }         // Forest provides more cover in rain
+                },
+                visualEffect: "rain_drops",
+                probability: 0.2 // 20% chance of rain
+            },
+            fog: {
+                name: "Fog",
+                description: "Foggy weather that reduces visibility and attack range",
+                attack: 0.8,
+                defense: 1.1,
+                movementSpeed: 0.9,
+                unitEffects: {
+                    ARCHER: { attack: 0.6, range: 0.5 }, // Archers get -40% attack and -50% range
+                    SCOUT: { vision: 0.5 }              // Scouts get -50% vision
+                },
+                terrainEffects: {
+                    forest: { defense: 1.3 }, // Forest provides even more cover in fog
+                    hills: { defense: 1.2 }   // Hills provide more cover in fog
+                },
+                visualEffect: "fog_overlay",
+                probability: 0.15 // 15% chance of fog
+            }
+        };
     }
 
     /**

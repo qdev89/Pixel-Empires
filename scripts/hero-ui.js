@@ -24,6 +24,10 @@ class HeroUI {
     createHeroUI() {
         // Create hero section
         const gameContainer = document.getElementById('game-container');
+        if (!gameContainer) {
+            console.error('Game container not found');
+            return;
+        }
 
         // Check if hero section already exists
         let heroSection = document.getElementById('hero-section');
@@ -55,17 +59,34 @@ class HeroUI {
             content.className = 'hero-content';
             heroSection.appendChild(content);
 
-            // Add to game container
+            // Find the correct location to insert the hero section
             const empireSection = document.getElementById('empire-section');
-            if (empireSection) {
-                gameContainer.insertBefore(heroSection, empireSection);
-            } else {
+            const gameContent = document.getElementById('game-content');
+
+            // Try to insert before empire section if it exists
+            if (empireSection && empireSection.parentNode) {
+                empireSection.parentNode.insertBefore(heroSection, empireSection);
+            }
+            // Otherwise try to append to game-content if it exists
+            else if (gameContent) {
+                gameContent.appendChild(heroSection);
+            }
+            // Finally, fall back to appending to game-container
+            else {
                 gameContainer.appendChild(heroSection);
             }
 
             // Add event listeners for tabs
-            document.getElementById('active-heroes-tab').addEventListener('click', () => this.switchTab('active'));
-            document.getElementById('available-heroes-tab').addEventListener('click', () => this.switchTab('available'));
+            const activeHeroesTab = document.getElementById('active-heroes-tab');
+            const availableHeroesTab = document.getElementById('available-heroes-tab');
+
+            if (activeHeroesTab) {
+                activeHeroesTab.addEventListener('click', () => this.switchTab('active'));
+            }
+
+            if (availableHeroesTab) {
+                availableHeroesTab.addEventListener('click', () => this.switchTab('available'));
+            }
         }
 
         // Initial update
