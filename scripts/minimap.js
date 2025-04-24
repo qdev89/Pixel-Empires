@@ -92,6 +92,39 @@ class Minimap {
 
             this.container.dispatchEvent(event);
         });
+
+        // Add hover effect to show coordinates
+        this.canvas.addEventListener('mousemove', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Convert pixel coordinates to map coordinates
+            const mapX = Math.floor((x / this.options.width) * this.mapSystem.config.width);
+            const mapY = Math.floor((y / this.options.height) * this.mapSystem.config.height);
+
+            // Update coordinate display
+            let coordDisplay = document.getElementById('minimap-coords');
+            if (!coordDisplay) {
+                coordDisplay = document.createElement('div');
+                coordDisplay.id = 'minimap-coords';
+                coordDisplay.className = 'minimap-coords';
+                this.container.appendChild(coordDisplay);
+            }
+
+            coordDisplay.textContent = `X: ${mapX}, Y: ${mapY}`;
+            coordDisplay.style.left = `${x + 10}px`;
+            coordDisplay.style.top = `${y + 10}px`;
+            coordDisplay.style.display = 'block';
+        });
+
+        // Hide coordinates when mouse leaves
+        this.canvas.addEventListener('mouseleave', () => {
+            const coordDisplay = document.getElementById('minimap-coords');
+            if (coordDisplay) {
+                coordDisplay.style.display = 'none';
+            }
+        });
     }
 
     /**
@@ -168,7 +201,7 @@ class Minimap {
 
         // Render viewport rectangle if provided
         if (viewportInfo) {
-            const { viewportX, viewportY, viewportWidth, viewportHeight } = viewportInfo;
+            const { viewportX, viewportY, viewportWidth, viewportHeight, zoom } = viewportInfo;
 
             // Calculate viewport rectangle
             const vpX = (viewportX - viewportWidth / 2) * pixelWidth;
@@ -181,8 +214,18 @@ class Minimap {
             this.ctx.lineWidth = 2;
             this.ctx.strokeRect(vpX, vpY, vpWidth, vpHeight);
 
-            // Add inner highlight
-            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            // Add inner highlight with color based on zoom level
+            // Red for zoomed out, green for normal zoom, blue for zoomed in
+            let highlightColor;
+            if (zoom && zoom < 0.8) {
+                highlightColor = 'rgba(255, 0, 0, 0.5)'; // Red for zoomed out
+            } else if (zoom && zoom > 1.5) {
+                highlightColor = 'rgba(0, 0, 255, 0.5)'; // Blue for zoomed in
+            } else {
+                highlightColor = 'rgba(0, 255, 0, 0.5)'; // Green for normal zoom
+            }
+
+            this.ctx.strokeStyle = highlightColor;
             this.ctx.lineWidth = 1;
             this.ctx.strokeRect(vpX + 1, vpY + 1, vpWidth - 2, vpHeight - 2);
 
@@ -505,7 +548,7 @@ class Minimap {
 
         // Add viewport info if available
         if (viewportInfo) {
-            const { viewportX, viewportY } = viewportInfo;
+            const { viewportX, viewportY, zoom } = viewportInfo;
 
             const coordsInfo = document.createElement('div');
             coordsInfo.textContent = `Viewing: X:${Math.floor(viewportX)}, Y:${Math.floor(viewportY)}`;
@@ -513,6 +556,15 @@ class Minimap {
             coordsInfo.style.fontSize = '9px';
             coordsInfo.style.color = '#aaa';
             this.legendContainer.appendChild(coordsInfo);
+
+            // Add zoom level info if available
+            if (zoom) {
+                const zoomInfo = document.createElement('div');
+                zoomInfo.textContent = `Zoom: ${Math.round(zoom * 100)}%`;
+                zoomInfo.style.fontSize = '9px';
+                zoomInfo.style.color = '#aaa';
+                this.legendContainer.appendChild(zoomInfo);
+            }
         }
     }
 }

@@ -12,29 +12,17 @@ class MapUI {
         this.gameState = gameState;
         this.uiManager = uiManager;
 
-        // Initialize map system
+        // Set initial state
+        this.showFogOfWar = true;
+        this.showGrid = true;
+        this.showCoordinates = false;
+
+        // Initialize map system first
         this.mapSystem = new MapSystem({
             width: 50,
             height: 50,
             seed: Math.floor(Math.random() * 1000000)
         });
-
-        // Initialize UI elements
-        this.initializeUI();
-
-        // Bind event handlers
-        this.bindEvents();
-
-        // Initialize map renderer
-        this.initializeMapRenderer();
-
-        // Initialize minimap
-        this.initializeMinimap();
-
-        // Set initial state
-        this.showFogOfWar = true;
-        this.showGrid = true;
-        this.showCoordinates = false;
 
         // Add additional terrain types
         this.addAdditionalTerrainTypes();
@@ -42,11 +30,50 @@ class MapUI {
         // Add more special location types
         this.addAdditionalLocationTypes();
 
-        // Explore starting area
-        this.exploreStartingArea();
+        // Initialize UI elements
+        this.initializeUI();
 
-        // Start periodic updates for exploration memory decay
-        this.startExplorationMemoryUpdates();
+        // Make sure the map tab is visible
+        const mapTab = document.getElementById('map-tab');
+        if (mapTab) {
+            mapTab.style.display = 'block';
+        }
+
+        // Make sure the map container is visible
+        if (this.mapContainer) {
+            this.mapContainer.style.display = 'block';
+            this.mapContainer.style.width = '100%';
+            this.mapContainer.style.height = '400px';
+            this.mapContainer.style.minHeight = '300px';
+            this.mapContainer.style.backgroundColor = '#1a1a2e';
+            this.mapContainer.style.position = 'relative';
+            this.mapContainer.style.overflow = 'hidden';
+        }
+
+        // Initialize map renderer with a delay to ensure DOM is ready
+        setTimeout(() => {
+            // Initialize map renderer
+            this.initializeMapRenderer();
+
+            // Bind event handlers after map renderer is initialized
+            this.bindEvents();
+
+            // Initialize minimap after map renderer
+            setTimeout(() => {
+                this.initializeMinimap();
+
+                // Explore starting area after everything is initialized
+                setTimeout(() => {
+                    this.exploreStartingArea();
+
+                    // Start periodic updates for exploration memory decay
+                    this.startExplorationMemoryUpdates();
+
+                    // Load map test script for development and testing
+                    this.loadMapTestScript();
+                }, 500);
+            }, 500);
+        }, 1000); // Longer delay to ensure DOM is fully ready
     }
 
     /**
@@ -54,13 +81,13 @@ class MapUI {
      */
     initializeUI() {
         // Get map container elements
-        this.mapContainer = document.getElementById('enhanced-map');
-        this.minimapContainer = document.getElementById('enhanced-minimap');
+        this.mapContainer = document.getElementById('game-map');
+        this.minimapContainer = document.getElementById('minimap');
 
         // Get control buttons
-        this.zoomInButton = document.getElementById('enhanced-zoom-in');
-        this.zoomOutButton = document.getElementById('enhanced-zoom-out');
-        this.centerMapButton = document.getElementById('enhanced-center-map');
+        this.zoomInButton = document.getElementById('zoom-in');
+        this.zoomOutButton = document.getElementById('zoom-out');
+        this.centerMapButton = document.getElementById('center-map');
         this.toggleFogButton = document.getElementById('toggle-fog');
         this.toggleGridButton = document.getElementById('toggle-grid');
 
@@ -75,49 +102,134 @@ class MapUI {
      * Initialize the map renderer
      */
     initializeMapRenderer() {
-        // Create map renderer
-        this.mapRenderer = new MapRenderer(this.mapSystem, this.mapContainer, {
-            tileSize: 32,
-            viewportWidth: 15,
-            viewportHeight: 10,
-            showGrid: this.showGrid,
-            showCoordinates: false
-        });
+        // Ensure the map container is visible and has dimensions before initializing
+        if (!this.mapContainer) {
+            console.error('Map container not found');
+            return;
+        }
+
+        // Force the container to be visible with explicit dimensions
+        this.mapContainer.style.display = 'block';
+        this.mapContainer.style.width = '100%';
+        this.mapContainer.style.height = '400px';
+        this.mapContainer.style.minHeight = '300px';
+        this.mapContainer.style.backgroundColor = '#1a1a2e';
+        this.mapContainer.style.position = 'relative';
+        this.mapContainer.style.overflow = 'hidden';
+
+        // Add a loading message to the container
+        const loadingMessage = document.createElement('div');
+        loadingMessage.textContent = 'Initializing Map...';
+        loadingMessage.style.position = 'absolute';
+        loadingMessage.style.top = '50%';
+        loadingMessage.style.left = '50%';
+        loadingMessage.style.transform = 'translate(-50%, -50%)';
+        loadingMessage.style.color = 'white';
+        loadingMessage.style.fontSize = '18px';
+        loadingMessage.style.fontWeight = 'bold';
+        loadingMessage.style.zIndex = '1000';
+        this.mapContainer.appendChild(loadingMessage);
+
+        // Add a small delay to ensure the container is properly rendered
+        setTimeout(() => {
+            try {
+                // Create map renderer with improved options
+                this.mapRenderer = new MapRenderer(this.mapSystem, this.mapContainer, {
+                    tileSize: 32,
+                    viewportWidth: 15,
+                    viewportHeight: 10,
+                    showGrid: this.showGrid,
+                    showCoordinates: false,
+                    minZoom: 0.3,  // Lower minimum zoom for better overview
+                    maxZoom: 3.0,  // Higher maximum zoom for better detail
+                    zoomStep: 0.15 // Smoother zoom steps
+                });
+
+                // Remove the loading message
+                if (loadingMessage.parentNode) {
+                    loadingMessage.parentNode.removeChild(loadingMessage);
+                }
+
+                // Ensure the map is properly sized after initialization
+                if (this.mapRenderer) {
+                    this.mapRenderer.resizeCanvas();
+                    this.mapRenderer.render();
+                }
+
+                // Log success message
+                console.log('Map renderer initialized successfully');
+            } catch (error) {
+                console.error('Error initializing map renderer:', error);
+                // Remove the loading message on error
+                if (loadingMessage.parentNode) {
+                    loadingMessage.parentNode.removeChild(loadingMessage);
+                }
+                // Add error message
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = 'Failed to initialize map. Please refresh the page.';
+                errorMessage.style.position = 'absolute';
+                errorMessage.style.top = '50%';
+                errorMessage.style.left = '50%';
+                errorMessage.style.transform = 'translate(-50%, -50%)';
+                errorMessage.style.color = 'red';
+                errorMessage.style.fontSize = '16px';
+                errorMessage.style.fontWeight = 'bold';
+                errorMessage.style.zIndex = '1000';
+                this.mapContainer.appendChild(errorMessage);
+            }
+        }, 500); // Longer delay to ensure DOM is ready
     }
 
     /**
      * Initialize the minimap
      */
     initializeMinimap() {
-        // Create minimap
-        this.minimap = new Minimap(this.mapSystem, this.minimapContainer);
+        // Check if minimap container exists
+        if (!this.minimapContainer) {
+            console.warn('Minimap container not found, skipping minimap initialization');
+            return;
+        }
 
-        // Update minimap with viewport info
-        this.updateMinimap();
+        // Create minimap with a small delay to ensure map renderer is initialized
+        setTimeout(() => {
+            try {
+                // Create minimap
+                this.minimap = new Minimap(this.mapSystem, this.minimapContainer);
+
+                // Update minimap with viewport info only if map renderer is initialized
+                if (this.mapRenderer) {
+                    this.updateMinimap();
+                }
+            } catch (error) {
+                console.error('Error initializing minimap:', error);
+            }
+        }, 200); // Delay minimap initialization
     }
 
     /**
      * Bind event handlers
      */
     bindEvents() {
-        // Zoom in button
+        // Zoom in button with improved zoom steps and animation
         this.zoomInButton.addEventListener('click', () => {
-            this.mapRenderer.setZoom(this.mapRenderer.zoom + 0.1);
+            const newZoom = this.mapRenderer.zoom * (1 + this.mapRenderer.options.zoomStep);
+            this.mapRenderer.setZoom(newZoom);
             this.updateMinimap();
         });
 
-        // Zoom out button
+        // Zoom out button with improved zoom steps and animation
         this.zoomOutButton.addEventListener('click', () => {
-            this.mapRenderer.setZoom(this.mapRenderer.zoom - 0.1);
+            const newZoom = this.mapRenderer.zoom * (1 - this.mapRenderer.options.zoomStep);
+            this.mapRenderer.setZoom(newZoom);
             this.updateMinimap();
         });
 
-        // Center map button
+        // Center map button with animation
         this.centerMapButton.addEventListener('click', () => {
-            this.mapRenderer.centerOn(
-                Math.floor(this.mapSystem.config.width / 2),
-                Math.floor(this.mapSystem.config.height / 2)
-            );
+            // Center on the middle of the map with a nice animation
+            const centerX = Math.floor(this.mapSystem.config.width / 2);
+            const centerY = Math.floor(this.mapSystem.config.height / 2);
+            this.mapRenderer.centerOn(centerX, centerY, 1.0); // Reset to default zoom
             this.updateMinimap();
         });
 
@@ -144,11 +256,61 @@ class MapUI {
             this.uiManager.showMessage(this.showCoordinates ? 'Coordinates shown' : 'Coordinates hidden');
         });
 
-        // Minimap click event
+        // Minimap click event with smooth animation
         this.minimapContainer.addEventListener('minimapClick', (e) => {
             const { x, y } = e.detail;
-            this.mapRenderer.centerOn(x, y);
+            this.mapRenderer.centerOn(x, y); // Use the new animated centerOn method
             this.updateMinimap();
+        });
+
+        // Add keyboard navigation for the map
+        document.addEventListener('keydown', (e) => {
+            // Only handle keyboard navigation when map is visible
+            if (!this.mapContainer.offsetParent) return;
+
+            const moveAmount = 1.0; // Base movement amount in tiles
+            const zoomAdjustedMove = moveAmount / this.mapRenderer.zoom; // Adjust for zoom level
+            let handled = true;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    this.mapRenderer.viewportY -= zoomAdjustedMove;
+                    break;
+                case 'ArrowDown':
+                    this.mapRenderer.viewportY += zoomAdjustedMove;
+                    break;
+                case 'ArrowLeft':
+                    this.mapRenderer.viewportX -= zoomAdjustedMove;
+                    break;
+                case 'ArrowRight':
+                    this.mapRenderer.viewportX += zoomAdjustedMove;
+                    break;
+                case '+':
+                case '=':
+                    const newZoomIn = this.mapRenderer.zoom * (1 + this.mapRenderer.options.zoomStep);
+                    this.mapRenderer.setZoom(newZoomIn);
+                    break;
+                case '-':
+                case '_':
+                    const newZoomOut = this.mapRenderer.zoom * (1 - this.mapRenderer.options.zoomStep);
+                    this.mapRenderer.setZoom(newZoomOut);
+                    break;
+                case 'Home':
+                    // Center on the middle of the map
+                    const centerX = Math.floor(this.mapSystem.config.width / 2);
+                    const centerY = Math.floor(this.mapSystem.config.height / 2);
+                    this.mapRenderer.centerOn(centerX, centerY);
+                    break;
+                default:
+                    handled = false;
+            }
+
+            if (handled) {
+                e.preventDefault();
+                this.mapRenderer.clampViewport();
+                this.mapRenderer.render();
+                this.updateMinimap();
+            }
         });
 
         // Location selected event
@@ -172,12 +334,29 @@ class MapUI {
      * Update the minimap with current viewport info
      */
     updateMinimap() {
-        this.minimap.update({
-            viewportX: this.mapRenderer.viewportX,
-            viewportY: this.mapRenderer.viewportY,
-            viewportWidth: this.mapRenderer.options.viewportWidth,
-            viewportHeight: this.mapRenderer.options.viewportHeight
-        });
+        // Check if minimap and map renderer are initialized
+        if (!this.minimap || !this.mapRenderer) {
+            return; // Skip update if not initialized
+        }
+
+        try {
+            // Update minimap with viewport info
+            this.minimap.update({
+                viewportX: this.mapRenderer.viewportX,
+                viewportY: this.mapRenderer.viewportY,
+                viewportWidth: this.mapRenderer.options.viewportWidth,
+                viewportHeight: this.mapRenderer.options.viewportHeight,
+                zoom: this.mapRenderer.zoom // Pass zoom level to minimap
+            });
+
+            // Update zoom level display if it exists
+            const zoomDisplay = document.getElementById('zoom-level-display');
+            if (zoomDisplay) {
+                zoomDisplay.textContent = `${Math.round(this.mapRenderer.zoom * 100)}%`;
+            }
+        } catch (error) {
+            console.error('Error updating minimap:', error);
+        }
     }
 
     /**
@@ -469,42 +648,79 @@ class MapUI {
      * Explore the starting area
      */
     exploreStartingArea() {
-        // Explore the center of the map
-        const centerX = Math.floor(this.mapSystem.config.width / 2);
-        const centerY = Math.floor(this.mapSystem.config.height / 2);
+        try {
+            // Explore the center of the map
+            const centerX = Math.floor(this.mapSystem.config.width / 2);
+            const centerY = Math.floor(this.mapSystem.config.height / 2);
 
-        // Fully explore the immediate starting area
-        this.mapSystem.exploreArea(centerX, centerY, 5, this.gameState.gameTime);
+            // Fully explore the immediate starting area
+            this.mapSystem.exploreArea(centerX, centerY, 5, this.gameState.gameTime);
 
-        // Partially explore a larger area around the starting point
-        for (let y = centerY - 10; y <= centerY + 10; y += 5) {
-            for (let x = centerX - 10; x <= centerX + 10; x += 5) {
-                if (x >= 0 && x < this.mapSystem.config.width && y >= 0 && y < this.mapSystem.config.height) {
-                    // Skip the center area which is already fully explored
-                    if (Math.abs(x - centerX) <= 5 && Math.abs(y - centerY) <= 5) continue;
+            // Partially explore a larger area around the starting point
+            for (let y = centerY - 10; y <= centerY + 10; y += 5) {
+                for (let x = centerX - 10; x <= centerX + 10; x += 5) {
+                    if (x >= 0 && x < this.mapSystem.config.width && y >= 0 && y < this.mapSystem.config.height) {
+                        // Skip the center area which is already fully explored
+                        if (Math.abs(x - centerX) <= 5 && Math.abs(y - centerY) <= 5) continue;
 
-                    // Partially explore with a smaller radius
-                    this.mapSystem.exploreArea(x, y, 3, this.gameState.gameTime);
+                        // Partially explore with a smaller radius
+                        this.mapSystem.exploreArea(x, y, 3, this.gameState.gameTime);
+                    }
                 }
             }
+
+            // Center the map on the starting area if map renderer is initialized
+            if (this.mapRenderer) {
+                this.mapRenderer.centerOn(centerX, centerY);
+
+                // Update minimap if it's initialized
+                this.updateMinimap();
+            }
+        } catch (error) {
+            console.error('Error exploring starting area:', error);
         }
-
-        // Center the map on the starting area
-        this.mapRenderer.centerOn(centerX, centerY);
-
-        // Update minimap
-        this.updateMinimap();
     }
 
     /**
      * Update the map UI
      */
     update() {
-        // Update map renderer
-        this.mapRenderer.render();
+        try {
+            // Check if map renderer is initialized
+            if (this.mapRenderer) {
+                // Update map renderer
+                this.mapRenderer.render();
 
-        // Update minimap
-        this.updateMinimap();
+                // Update minimap
+                this.updateMinimap();
+            }
+        } catch (error) {
+            console.error('Error updating map UI:', error);
+        }
+    }
+
+    /**
+     * Load map test script for development and testing
+     */
+    loadMapTestScript() {
+        try {
+            // Check if we're in development mode
+            const isDevelopment = window.location.hostname === 'localhost' ||
+                                window.location.hostname === '127.0.0.1' ||
+                                window.location.search.includes('debug=true');
+
+            if (isDevelopment) {
+                // Load the map test script
+                const script = document.createElement('script');
+                script.src = 'scripts/map-test.js';
+                script.async = true;
+                script.onload = () => console.log('Map test script loaded');
+                script.onerror = (err) => console.error('Error loading map test script:', err);
+                document.head.appendChild(script);
+            }
+        } catch (error) {
+            console.error('Error loading map test script:', error);
+        }
     }
 }
 

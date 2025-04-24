@@ -16,6 +16,9 @@ const researchManager = new ResearchManager(gameState);
 // Initialize UI manager
 const uiManager = new UIManager(gameState, buildingManager, unitManager, combatManager, researchManager);
 
+// Initialize map UI
+const mapUI = new MapUI(gameState, uiManager);
+
 // Initialize combat UI
 const combatUI = new CombatUI(gameState, combatManager);
 

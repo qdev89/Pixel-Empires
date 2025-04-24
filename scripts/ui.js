@@ -31,13 +31,8 @@ class UIManager {
         // Set up state change handler
         this.gameState.onStateChange = () => this.updateUI();
 
-        // Map state
-        this.mapZoom = 1;
-        this.mapPosition = { x: 0, y: 0 };
-        this.isDragging = false;
-        this.dragStart = { x: 0, y: 0 };
-        this.mapSize = { width: 30, height: 30 }; // Larger map size for more exploration
-        this.resourceNodes = []; // Array to store resource nodes on the map
+        // Map state is now handled by MapUI class
+        // Removed old map state variables to avoid conflicts
 
         // DOM elements
         this.elements = {
@@ -62,19 +57,9 @@ class UIManager {
             trainingControls: document.getElementById('training-controls'),
             attackButton: document.getElementById('attack-button'),
             combatReports: document.getElementById('combat-reports'),
-            gameMap: document.getElementById('game-map'),
-            mapControls: {
-                zoomIn: document.getElementById('zoom-in'),
-                zoomOut: document.getElementById('zoom-out'),
-                resetZoom: document.getElementById('reset-zoom'),
-                centerMap: document.getElementById('center-map'),
-                claimTerritory: document.getElementById('claim-territory')
-            },
-            mapElements: {
-                wrapper: document.getElementById('map-wrapper'),
-                minimap: document.getElementById('minimap'),
-                minimapViewport: document.getElementById('minimap-viewport')
-            },
+            // Map elements are now handled by MapUI class
+            // Removed old map elements to avoid conflicts
+
             research: {
                 currentResearch: document.getElementById('current-research'),
                 progressBar: document.getElementById('research-progress-bar'),
@@ -97,9 +82,9 @@ class UIManager {
         this.createBuildingButtons();
         this.createTrainingControls();
         this.initializeResearchUI();
-        this.initializeMapControls();
+        this.initializeMapControls(); // Now just a stub
         this.initializeEmpireTabs();
-        this.renderMap();
+        // Map rendering is now handled by MapUI class
         this.updateUI();
 
         // Set up online status toggle (for demonstration)
@@ -117,12 +102,15 @@ class UIManager {
             });
         }
 
-        // Set up territory claim button
-        if (this.elements.mapControls.claimTerritory) {
-            this.elements.mapControls.claimTerritory.addEventListener('click', () => {
-                this.showTerritoryClaimModal();
+        // Set up cheat button for unlimited resources
+        if (this.elements.gameControls.cheatButton) {
+            this.elements.gameControls.cheatButton.addEventListener('click', () => {
+                this.gameState.setUnlimitedResources();
+                this.updateUI();
             });
         }
+
+        // Territory claim button is now handled by MapUI class
 
         // Set up territory modal close button
         const territoryModalClose = document.getElementById('territory-modal-close');
@@ -172,215 +160,16 @@ class UIManager {
 
     /**
      * Initialize map controls for zooming and panning
+     * Now handled by MapUI class
      */
     initializeMapControls() {
-        // Set up zoom in button - enhanced zoom as per user preference
-        if (this.elements.mapControls.zoomIn) {
-            this.elements.mapControls.zoomIn.addEventListener('click', () => {
-                this.mapZoom = Math.min(this.mapZoom + 0.5, 5.0); // Increased max zoom and zoom step
-                this.updateMapTransform();
-                this.updateMinimapViewport();
-            });
-        }
-
-        // Set up zoom out button - enhanced zoom as per user preference
-        if (this.elements.mapControls.zoomOut) {
-            this.elements.mapControls.zoomOut.addEventListener('click', () => {
-                this.mapZoom = Math.max(this.mapZoom - 0.5, 0.2); // Lower min zoom and zoom step
-                this.updateMapTransform();
-                this.updateMinimapViewport();
-            });
-        }
-
-        // Set up reset zoom button
-        if (this.elements.mapControls.resetZoom) {
-            this.elements.mapControls.resetZoom.addEventListener('click', () => {
-                this.mapZoom = 1.0;
-                this.updateMapTransform();
-                this.updateMinimapViewport();
-            });
-        }
-
-        // Set up center map button
-        if (this.elements.mapControls.centerMap) {
-            this.elements.mapControls.centerMap.addEventListener('click', () => {
-                this.mapPosition = { x: 0, y: 0 };
-                this.updateMapTransform();
-                this.updateMinimapViewport();
-            });
-        }
-
-        // Set up map dragging
-        const gameMap = this.elements.gameMap;
-        if (gameMap) {
-            // Mouse events
-            gameMap.addEventListener('mousedown', (e) => {
-                if (e.button === 0) { // Left mouse button
-                    this.isDragging = true;
-                    this.dragStart = { x: e.clientX, y: e.clientY };
-                    gameMap.classList.add('grabbing');
-                    e.preventDefault();
-                }
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (this.isDragging) {
-                    const dx = e.clientX - this.dragStart.x;
-                    const dy = e.clientY - this.dragStart.y;
-
-                    this.mapPosition.x += dx / this.mapZoom;
-                    this.mapPosition.y += dy / this.mapZoom;
-
-                    this.dragStart = { x: e.clientX, y: e.clientY };
-                    this.updateMapTransform();
-                    this.updateMinimapViewport();
-                }
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (this.isDragging) {
-                    this.isDragging = false;
-                    gameMap.classList.remove('grabbing');
-                }
-            });
-
-            // Touch events for mobile
-            gameMap.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    this.isDragging = true;
-                    this.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    gameMap.classList.add('grabbing');
-                    e.preventDefault();
-                }
-            });
-
-            document.addEventListener('touchmove', (e) => {
-                if (this.isDragging && e.touches.length === 1) {
-                    const dx = e.touches[0].clientX - this.dragStart.x;
-                    const dy = e.touches[0].clientY - this.dragStart.y;
-
-                    this.mapPosition.x += dx / this.mapZoom;
-                    this.mapPosition.y += dy / this.mapZoom;
-
-                    this.dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    this.updateMapTransform();
-                    this.updateMinimapViewport();
-                }
-            });
-
-            document.addEventListener('touchend', () => {
-                if (this.isDragging) {
-                    this.isDragging = false;
-                    gameMap.classList.remove('grabbing');
-                }
-            });
-
-            // Mouse wheel zoom - enhanced zoom as per user preference
-            gameMap.addEventListener('wheel', (e) => {
-                e.preventDefault();
-
-                // Get mouse position relative to map
-                const rect = gameMap.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                // Calculate position in map coordinates before zoom
-                const mapX = (mouseX - this.mapPosition.x) / this.mapZoom;
-                const mapY = (mouseY - this.mapPosition.y) / this.mapZoom;
-
-                // Adjust zoom level with improved zoom speed and range
-                if (e.deltaY < 0) {
-                    // Zoom in
-                    this.mapZoom = Math.min(this.mapZoom * 1.2, 5.0); // Faster zoom in, higher max zoom
-                } else {
-                    // Zoom out
-                    this.mapZoom = Math.max(this.mapZoom * 0.8, 0.2); // Faster zoom out, lower min zoom
-                }
-
-                // Calculate new position to keep mouse over same point
-                this.mapPosition.x = mouseX - mapX * this.mapZoom;
-                this.mapPosition.y = mouseY - mapY * this.mapZoom;
-
-                this.updateMapTransform();
-                this.updateMinimapViewport();
-            }, { passive: false });
-
-            // Set up minimap click to navigate
-            const minimap = this.elements.mapElements.minimap;
-            if (minimap) {
-                minimap.addEventListener('click', (e) => {
-                    const rect = minimap.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const clickY = e.clientY - rect.top;
-
-                    // Convert click position to map position
-                    const mapWidth = this.mapSize.width * 40; // Cell size is 40px
-                    const mapHeight = this.mapSize.height * 40;
-
-                    const minimapScale = Math.min(
-                        minimap.clientWidth / mapWidth,
-                        minimap.clientHeight / mapHeight
-                    );
-
-                    const mapCenterX = (clickX / minimapScale) - (this.elements.gameMap.clientWidth / 2 / this.mapZoom);
-                    const mapCenterY = (clickY / minimapScale) - (this.elements.gameMap.clientHeight / 2 / this.mapZoom);
-
-                    this.mapPosition.x = -mapCenterX * this.mapZoom;
-                    this.mapPosition.y = -mapCenterY * this.mapZoom;
-
-                    this.updateMapTransform();
-                    this.updateMinimapViewport();
-                });
-            }
-        }
+        // Map controls are now handled by MapUI class
+        console.log('Map controls initialized by MapUI class');
     }
 
     /**
-     * Update map transform (position and zoom)
+     * Map transform and minimap viewport functions are now handled by MapUI class
      */
-    updateMapTransform() {
-        const mapGrid = this.elements.gameMap.querySelector('.map-grid');
-        if (mapGrid) {
-            mapGrid.style.transform = `translate(${this.mapPosition.x}px, ${this.mapPosition.y}px) scale(${this.mapZoom})`;
-        }
-    }
-
-    /**
-     * Update minimap viewport indicator
-     */
-    updateMinimapViewport() {
-        const minimapViewport = this.elements.mapElements.minimapViewport;
-        const minimap = this.elements.mapElements.minimap;
-        const gameMap = this.elements.gameMap;
-
-        if (minimapViewport && minimap && gameMap) {
-            // Calculate map dimensions
-            const mapWidth = this.mapSize.width * 40; // Cell size is 40px
-            const mapHeight = this.mapSize.height * 40;
-
-            // Calculate minimap scale
-            const minimapScale = Math.min(
-                minimap.clientWidth / mapWidth,
-                minimap.clientHeight / mapHeight
-            );
-
-            // Calculate visible area in map coordinates
-            const visibleWidth = gameMap.clientWidth / this.mapZoom;
-            const visibleHeight = gameMap.clientHeight / this.mapZoom;
-
-            // Calculate viewport position and size
-            const viewportX = (-this.mapPosition.x / this.mapZoom) * minimapScale;
-            const viewportY = (-this.mapPosition.y / this.mapZoom) * minimapScale;
-            const viewportWidth = visibleWidth * minimapScale;
-            const viewportHeight = visibleHeight * minimapScale;
-
-            // Update viewport element
-            minimapViewport.style.left = `${viewportX}px`;
-            minimapViewport.style.top = `${viewportY}px`;
-            minimapViewport.style.width = `${viewportWidth}px`;
-            minimapViewport.style.height = `${viewportHeight}px`;
-        }
-    }
 
     /**
      * Initialize research UI
@@ -525,387 +314,29 @@ class UIManager {
 
     /**
      * Render the game map
+     * Now handled by MapUI class
      */
     renderMap() {
-        const mapElement = this.elements.gameMap;
-        mapElement.innerHTML = '';
-
-        // Create map grid
-        const mapGrid = document.createElement('div');
-        mapGrid.className = 'map-grid';
-
-        // Set explicit grid template based on expanded map size
-        mapGrid.style.gridTemplateColumns = `repeat(${this.mapSize.width}, 40px)`;
-        mapGrid.style.gridTemplateRows = `repeat(${this.mapSize.height}, 40px)`;
-
-        // Generate resource nodes if they don't exist yet
-        if (this.resourceNodes.length === 0) {
-            this.generateResourceNodes();
-        }
-
-        // Render map cells for the expanded map
-        for (let y = 0; y < this.mapSize.height; y++) {
-            for (let x = 0; x < this.mapSize.width; x++) {
-                const cell = document.createElement('div');
-                cell.className = 'map-cell';
-                cell.dataset.x = x;
-                cell.dataset.y = y;
-
-                // Add terrain type based on position with improved variety
-                // This creates a more interesting map with varied terrain
-                const terrainSeed = (x * 3 + y * 7 + Math.floor(x/5) * 11 + Math.floor(y/5) * 13) % 15; // More complex deterministic "random" value
-
-                // Create terrain clusters for more realistic map generation
-                if (terrainSeed < 7) {
-                    cell.classList.add('grass');
-                } else if (terrainSeed < 10) {
-                    cell.classList.add('forest');
-                } else if (terrainSeed < 13) {
-                    cell.classList.add('mountain');
-                } else {
-                    cell.classList.add('water');
-                }
-
-                // Check if this cell is within the original game map bounds
-                if (x < this.gameState.mapSize.width && y < this.gameState.mapSize.height) {
-                    const mapCell = this.gameState.map[y][x];
-
-                    if (mapCell) {
-                        if (mapCell.type === 'PLAYER') {
-                            // Add player base icon with unit animation
-                            const playerIcon = document.createElement('div');
-                            playerIcon.className = 'unit-display';
-                            playerIcon.dataset.unitType = 'spearman';
-
-                            // Add fallback text if needed
-                            playerIcon.textContent = 'P';
-
-                            cell.appendChild(playerIcon);
-                            cell.textContent = '';
-                            cell.title = 'Player Base';
-                            cell.classList.add('player-base');
-                        } else if (mapCell.type === 'NPC') {
-                            // Add enemy icon with unit animation
-                            const enemyType = mapCell.campType === 'GOBLIN_CAMP' ? 'goblin' : 'bandit';
-                            const enemyIcon = document.createElement('div');
-                            enemyIcon.className = 'unit-display';
-                            enemyIcon.dataset.unitType = enemyType;
-
-                            // Add fallback text if needed
-                            enemyIcon.textContent = enemyType === 'goblin' ? 'G' : 'B';
-
-                            cell.appendChild(enemyIcon);
-                            cell.textContent = '';
-                            cell.title = `${CONFIG.NPC_CAMPS[mapCell.campType].name} (Difficulty: ${mapCell.difficulty || CONFIG.NPC_CAMPS[mapCell.campType].difficulty})`;
-                            cell.classList.add('enemy-camp');
-
-                            // Add click handler for attacking
-                            cell.addEventListener('click', () => {
-                                this.combatManager.attackNPC(x, y);
-                            });
-                            cell.style.cursor = 'pointer';
-                        }
-                    }
-                }
-
-                // Check if this cell has a resource node
-                const resourceNode = this.resourceNodes.find(node => node.x === x && node.y === y);
-                if (resourceNode) {
-                    // Add resource node icon
-                    const resourceIcon = document.createElement('div');
-
-                    // Check if it's a special resource node
-                    if (resourceNode.isSpecial) {
-                        resourceIcon.className = `resource-node special-resource ${resourceNode.type.toLowerCase()}`;
-
-                        // Add special effect indicator
-                        const effectIndicator = document.createElement('div');
-                        effectIndicator.className = 'special-effect-indicator';
-                        resourceIcon.appendChild(effectIndicator);
-
-                        // Add tooltip with special resource info
-                        cell.title = `${resourceNode.name} (${resourceNode.amount} remaining)\n${resourceNode.description}\nEffect: ${resourceNode.specialEffect} +${resourceNode.effectValue}%`;
-                    } else {
-                        resourceIcon.className = `resource-node ${resourceNode.type.toLowerCase()}`;
-
-                        // Add tooltip with resource info
-                        cell.title = `${resourceNode.type} Node (${resourceNode.amount} remaining)`;
-                    }
-
-                    cell.classList.add('resource-cell');
-
-                    // Add click handler for resource nodes
-                    cell.addEventListener('click', () => {
-                        this.showResourceNodeInfo(resourceNode);
-                    });
-                    cell.style.cursor = 'pointer';
-
-                    cell.appendChild(resourceIcon);
-                }
-
-                // Check if this cell has an outpost
-                const outpost = this.gameState.outposts.find(o => o.x === x && o.y === y);
-                if (outpost) {
-                    // Add outpost icon
-                    const outpostIcon = document.createElement('div');
-                    outpostIcon.className = `outpost-icon ${outpost.type.toLowerCase()}`;
-
-                    // Add level indicator
-                    const levelIndicator = document.createElement('div');
-                    levelIndicator.className = 'outpost-level';
-                    levelIndicator.textContent = outpost.level;
-                    outpostIcon.appendChild(levelIndicator);
-
-                    // Add tooltip with outpost info
-                    cell.title = `${outpost.name} (Level ${outpost.level})`;
-                    cell.classList.add('outpost-cell');
-
-                    // Add click handler for outposts
-                    cell.addEventListener('click', () => {
-                        this.showOutpostInfo(outpost);
-                    });
-                    cell.style.cursor = 'pointer';
-
-                    cell.appendChild(outpostIcon);
-
-                    // If the outpost is under construction or upgrading, add a progress overlay
-                    if (outpost.status === 'building' || outpost.status === 'upgrading') {
-                        const progressOverlay = document.createElement('div');
-                        progressOverlay.className = 'construction-overlay';
-
-                        const progressBar = document.createElement('div');
-                        progressBar.className = 'construction-progress';
-
-                        // Calculate progress percentage
-                        const now = Date.now();
-                        const elapsed = now - outpost.startTime;
-                        const total = outpost.completionTime - outpost.startTime;
-                        const percent = Math.min(100, (elapsed / total) * 100);
-
-                        progressBar.style.width = `${percent}%`;
-                        progressOverlay.appendChild(progressBar);
-
-                        cell.appendChild(progressOverlay);
-                    }
-                }
-
-                mapGrid.appendChild(cell);
-            }
-        }
-
-        // Draw claimed territories
-        if (this.gameState.claimedTerritories && this.gameState.claimedTerritories.length > 0) {
-            for (const territory of this.gameState.claimedTerritories) {
-                // Create a territory overlay
-                const territoryOverlay = document.createElement('div');
-                territoryOverlay.className = 'territory-overlay';
-
-                // Calculate position and size
-                const size = territory.radius * 2 * 40 + 40; // Convert radius to pixels (40px per tile) + extra for border
-                territoryOverlay.style.width = `${size}px`;
-                territoryOverlay.style.height = `${size}px`;
-                territoryOverlay.style.left = `${territory.x * 40 + 20 - size/2}px`;
-                territoryOverlay.style.top = `${territory.y * 40 + 20 - size/2}px`;
-
-                mapGrid.appendChild(territoryOverlay);
-            }
-        }
-
-        // Add map legend
-        const mapLegend = document.createElement('div');
-        mapLegend.className = 'map-legend';
-        mapLegend.innerHTML = `
-            <div class="legend-title">Map Legend</div>
-            <div class="legend-item"><div class="legend-icon player"></div>Your Base</div>
-            <div class="legend-item"><div class="legend-icon enemy"></div>Enemy Camp</div>
-            <div class="legend-item"><div class="legend-icon food"></div>Food Resource</div>
-            <div class="legend-item"><div class="legend-icon ore"></div>Ore Resource</div>
-            <div class="legend-item"><div class="legend-icon special-resource"></div>Special Resource</div>
-            <div class="legend-item"><div class="legend-icon territory"></div>Your Territory</div>
-            <div class="legend-item"><div class="legend-icon outpost"></div>Outpost</div>
-            <div class="legend-item"><div class="legend-icon resource_station"></div>Resource Station</div>
-            <div class="legend-item"><div class="legend-icon guard_post"></div>Guard Post</div>
-        `;
-        mapElement.appendChild(mapLegend);
-        mapElement.appendChild(mapGrid);
-
-        // Render minimap
-        this.renderMinimap();
-
-        // Apply current transform
-        this.updateMapTransform();
-        this.updateMinimapViewport();
+        // Map rendering is now handled by MapUI class
+        console.log('Map rendering handled by MapUI class');
     }
 
     /**
      * Generate resource nodes on the map
+     * Now handled by MapUI class
      */
     generateResourceNodes() {
-        // Clear existing nodes
-        this.resourceNodes = [];
-
-        // Generate food resource nodes (farms, forests, etc.)
-        for (let i = 0; i < 10; i++) {
-            // Place food nodes in grass or forest areas
-            let x, y, terrainSeed;
-            do {
-                x = Math.floor(Math.random() * this.mapSize.width);
-                y = Math.floor(Math.random() * this.mapSize.height);
-                terrainSeed = (x * 3 + y * 7 + Math.floor(x/5) * 11 + Math.floor(y/5) * 13) % 15;
-            } while (terrainSeed >= 10); // Only on grass or forest
-
-            this.resourceNodes.push({
-                type: 'FOOD',
-                x,
-                y,
-                amount: 500 + Math.floor(Math.random() * 500), // 500-1000 resources
-                harvestRate: 5 + Math.floor(Math.random() * 5) // 5-10 per harvest
-            });
-        }
-
-        // Generate ore resource nodes (mines, mountains, etc.)
-        for (let i = 0; i < 8; i++) {
-            // Place ore nodes in mountain areas
-            let x, y, terrainSeed;
-            do {
-                x = Math.floor(Math.random() * this.mapSize.width);
-                y = Math.floor(Math.random() * this.mapSize.height);
-                terrainSeed = (x * 3 + y * 7 + Math.floor(x/5) * 11 + Math.floor(y/5) * 13) % 15;
-            } while (terrainSeed < 10 || terrainSeed >= 13); // Only on mountains
-
-            this.resourceNodes.push({
-                type: 'ORE',
-                x,
-                y,
-                amount: 300 + Math.floor(Math.random() * 300), // 300-600 resources
-                harvestRate: 3 + Math.floor(Math.random() * 3) // 3-6 per harvest
-            });
-        }
-
-        // Generate special resource nodes (rare and valuable)
-        this.generateSpecialResourceNodes();
+        // Resource node generation is now handled by MapUI class
+        console.log('Resource node generation handled by MapUI class');
     }
 
     /**
      * Generate special resource nodes on the map
+     * Now handled by MapUI class
      */
     generateSpecialResourceNodes() {
-        // Special resource types
-        const specialResourceTypes = [
-            {
-                type: 'CRYSTAL',
-                name: 'Crystal',
-                description: 'Rare crystals that boost research speed',
-                terrainPreference: 'mountain', // Prefers mountains
-                rarity: 0.7, // 70% chance to spawn
-                minAmount: 100,
-                maxAmount: 200,
-                harvestRate: 2,
-                specialEffect: 'RESEARCH_BOOST',
-                effectValue: 25 // 25% research speed boost
-            },
-            {
-                type: 'ANCIENT_ARTIFACT',
-                name: 'Ancient Artifact',
-                description: 'Mysterious artifacts that provide diplomatic advantages',
-                terrainPreference: 'forest', // Prefers forests
-                rarity: 0.5, // 50% chance to spawn
-                minAmount: 50,
-                maxAmount: 100,
-                harvestRate: 1,
-                specialEffect: 'DIPLOMATIC_INFLUENCE',
-                effectValue: 30 // 30% diplomatic influence boost
-            },
-            {
-                type: 'RARE_METAL',
-                name: 'Rare Metal',
-                description: 'Exotic metals that strengthen military units',
-                terrainPreference: 'mountain', // Prefers mountains
-                rarity: 0.6, // 60% chance to spawn
-                minAmount: 150,
-                maxAmount: 250,
-                harvestRate: 2,
-                specialEffect: 'UNIT_STRENGTH',
-                effectValue: 20 // 20% unit strength boost
-            },
-            {
-                type: 'ANCIENT_KNOWLEDGE',
-                name: 'Ancient Knowledge',
-                description: 'Lost knowledge that accelerates technology development',
-                terrainPreference: 'grass', // Prefers grass
-                rarity: 0.4, // 40% chance to spawn
-                minAmount: 80,
-                maxAmount: 150,
-                harvestRate: 1,
-                specialEffect: 'TECHNOLOGY_BOOST',
-                effectValue: 35 // 35% technology development boost
-            }
-        ];
-
-        // Try to spawn each special resource type
-        for (const resourceType of specialResourceTypes) {
-            // Check if this resource spawns based on rarity
-            if (Math.random() > resourceType.rarity) continue;
-
-            // Determine terrain preference
-            let terrainFilter;
-            if (resourceType.terrainPreference === 'mountain') {
-                terrainFilter = (seed) => seed >= 10 && seed < 13;
-            } else if (resourceType.terrainPreference === 'forest') {
-                terrainFilter = (seed) => seed >= 7 && seed < 10;
-            } else if (resourceType.terrainPreference === 'grass') {
-                terrainFilter = (seed) => seed < 7;
-            } else {
-                terrainFilter = () => true; // No preference
-            }
-
-            // Find a suitable location
-            let attempts = 0;
-            let placed = false;
-
-            while (attempts < 20 && !placed) { // Limit attempts to prevent infinite loops
-                attempts++;
-
-                const x = Math.floor(Math.random() * this.mapSize.width);
-                const y = Math.floor(Math.random() * this.mapSize.height);
-                const terrainSeed = (x * 3 + y * 7 + Math.floor(x/5) * 11 + Math.floor(y/5) * 13) % 15;
-
-                // Check if terrain is suitable
-                if (!terrainFilter(terrainSeed)) continue;
-
-                // Check if location is already occupied
-                const isOccupied = this.resourceNodes.some(node => node.x === x && node.y === y);
-                if (isOccupied) continue;
-
-                // Place the special resource node
-                const amount = resourceType.minAmount + Math.floor(Math.random() * (resourceType.maxAmount - resourceType.minAmount));
-
-                const specialNode = {
-                    type: resourceType.type,
-                    name: resourceType.name,
-                    description: resourceType.description,
-                    x,
-                    y,
-                    amount,
-                    harvestRate: resourceType.harvestRate,
-                    specialEffect: resourceType.specialEffect,
-                    effectValue: resourceType.effectValue,
-                    isSpecial: true
-                };
-
-                this.resourceNodes.push(specialNode);
-
-                // Also add to game state's special resource nodes
-                if (this.gameState.specialResourceNodes) {
-                    this.gameState.specialResourceNodes.push({
-                        ...specialNode,
-                        discovered: false // Initially undiscovered
-                    });
-                }
-
-                placed = true;
-            }
-        }
+        // Special resource node generation is now handled by MapUI class
+        console.log('Special resource node generation handled by MapUI class');
     }
 
     /**
@@ -1607,119 +1038,11 @@ class UIManager {
 
     /**
      * Render the minimap
+     * Now handled by MapUI class
      */
     renderMinimap() {
-        const minimap = this.elements.mapElements.minimap;
-        if (!minimap) return;
-
-        minimap.innerHTML = '';
-
-        // Calculate minimap scale
-        const mapWidth = this.mapSize.width * 40; // Cell size is 40px
-        const mapHeight = this.mapSize.height * 40;
-
-        const minimapScale = Math.min(
-            minimap.clientWidth / mapWidth,
-            minimap.clientHeight / mapHeight
-        );
-
-        // Create minimap canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = minimap.clientWidth;
-        canvas.height = minimap.clientHeight;
-        minimap.appendChild(canvas);
-
-        const ctx = canvas.getContext('2d');
-
-        // Draw terrain
-        for (let y = 0; y < this.mapSize.height; y++) {
-            for (let x = 0; x < this.mapSize.width; x++) {
-                const terrainSeed = (x * 3 + y * 7 + Math.floor(x/5) * 11 + Math.floor(y/5) * 13) % 15;
-
-                // Set color based on terrain type
-                if (terrainSeed < 7) {
-                    ctx.fillStyle = '#2a6e2a'; // grass
-                } else if (terrainSeed < 10) {
-                    ctx.fillStyle = '#0e4e0e'; // forest
-                } else if (terrainSeed < 13) {
-                    ctx.fillStyle = '#6e4e2a'; // mountain
-                } else {
-                    ctx.fillStyle = '#2a4e6e'; // water
-                }
-
-                // Draw cell
-                ctx.fillRect(
-                    x * 40 * minimapScale,
-                    y * 40 * minimapScale,
-                    40 * minimapScale,
-                    40 * minimapScale
-                );
-            }
-        }
-
-        // Draw claimed territories
-        if (this.gameState.claimedTerritories && this.gameState.claimedTerritories.length > 0) {
-            ctx.globalAlpha = 0.3;
-            ctx.fillStyle = '#4f4f'; // semi-transparent green
-
-            for (const territory of this.gameState.claimedTerritories) {
-                ctx.beginPath();
-                ctx.arc(
-                    (territory.x * 40 + 20) * minimapScale,
-                    (territory.y * 40 + 20) * minimapScale,
-                    territory.radius * 40 * minimapScale,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-            }
-
-            ctx.globalAlpha = 1.0;
-        }
-
-        // Draw resource nodes
-        for (const node of this.resourceNodes) {
-            if (node.type === 'FOOD') {
-                ctx.fillStyle = '#4f4'; // bright green for food
-            } else if (node.type === 'ORE') {
-                ctx.fillStyle = '#f84'; // orange for ore
-            }
-
-            // Draw resource node marker
-            const markerSize = 4 * minimapScale;
-            ctx.fillRect(
-                (node.x * 40 + 20 - markerSize/2) * minimapScale,
-                (node.y * 40 + 20 - markerSize/2) * minimapScale,
-                markerSize,
-                markerSize
-            );
-        }
-
-        // Draw player base and enemy camps
-        for (let y = 0; y < this.gameState.mapSize.height; y++) {
-            for (let x = 0; x < this.gameState.mapSize.width; x++) {
-                const mapCell = this.gameState.map[y][x];
-
-                if (mapCell) {
-                    if (mapCell.type === 'PLAYER') {
-                        ctx.fillStyle = '#4ff'; // cyan for player
-                    } else if (mapCell.type === 'NPC') {
-                        ctx.fillStyle = '#f44'; // bright red for enemies
-                    } else {
-                        continue;
-                    }
-
-                    // Draw marker
-                    const markerSize = 6 * minimapScale;
-                    ctx.fillRect(
-                        (x * 40 + 20 - markerSize/2) * minimapScale,
-                        (y * 40 + 20 - markerSize/2) * minimapScale,
-                        markerSize,
-                        markerSize
-                    );
-                }
-            }
-        }
+        // Minimap rendering is now handled by MapUI class
+        console.log('Minimap rendering handled by MapUI class');
     }
 
     /**
@@ -1791,9 +1114,13 @@ class UIManager {
             this.diplomacyUI.update();
         }
 
-        // Update map UI if it exists
-        if (this.mapUI) {
-            this.mapUI.update();
+        // Update map UI if it exists and is fully initialized
+        try {
+            if (this.mapUI) {
+                this.mapUI.update();
+            }
+        } catch (error) {
+            console.warn('Map UI not fully initialized yet:', error.message);
         }
     }
 

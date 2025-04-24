@@ -6,8 +6,9 @@ class MapSystem {
     /**
      * Initialize the map system
      * @param {Object} config - Configuration options
+     * @param {GameState} gameState - Game state reference
      */
-    constructor(config = {}) {
+    constructor(config = {}, gameState = null) {
         // Default configuration
         this.config = {
             width: 50,
@@ -15,6 +16,9 @@ class MapSystem {
             seed: Math.floor(Math.random() * 1000000),
             ...config
         };
+
+        // Store reference to game state
+        this.gameState = gameState;
 
         // Initialize map data
         this.mapData = {

@@ -178,27 +178,34 @@
         font-weight: bold;
     }
 
-    /* Map container for mobile */
-    #map-container {
+    /* Map container for mobile with improved touch handling */
+    #map-container, #enhanced-map-container {
         margin-bottom: 15px;
         border: 2px solid var(--border-color);
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        max-width: 100%;
     }
 
-    #map-wrapper {
-        height: 300px;
-        touch-action: manipulation;
+    #map-wrapper, #enhanced-map-wrapper {
+        height: 300px; /* Reduced height for mobile */
         position: relative;
+        touch-action: none; /* Prevent browser handling of all touch events */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        overflow: hidden;
     }
 
-    #game-map {
-        touch-action: pan-x pan-y;
+    #game-map, #enhanced-map {
         cursor: grab;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        width: 100%;
+        height: 100%;
     }
 
-    #game-map:active {
+    #game-map:active, #enhanced-map:active {
         cursor: grabbing;
     }
 
@@ -208,40 +215,58 @@
         padding: 8px;
         background-color: var(--secondary-color);
         border-top: 2px solid var(--border-color);
+        gap: 10px; /* Increased gap for better touch targets */
     }
 
     .map-button {
         padding: 12px;
         font-size: var(--font-size-medium);
         margin: 3px;
-        min-width: 44px;
+        min-width: 44px; /* Minimum size for touch targets */
         min-height: 44px;
         border-radius: 6px;
     }
 
-    /* Map zoom controls for mobile */
+    /* Map zoom controls for mobile with improved positioning and visibility */
     .map-zoom-controls {
         position: absolute;
-        bottom: 10px;
-        right: 10px;
+        bottom: 15px;
+        right: 15px;
         display: flex;
         flex-direction: column;
-        gap: 5px;
-        z-index: 10;
+        gap: 10px;
+        z-index: 100; /* Ensure controls are above other elements */
     }
 
     .zoom-button {
-        width: 44px;
-        height: 44px;
+        width: 50px; /* Larger buttons for easier touch */
+        height: 50px;
         font-size: 24px;
-        background-color: var(--button-color);
+        background-color: rgba(15, 52, 96, 0.8); /* Semi-transparent background */
         color: white;
         border: 2px solid var(--border-color);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+        transition: all 0.2s ease;
+    }
+
+    .zoom-button:active {
+        transform: scale(0.95);
+        background-color: rgba(15, 52, 96, 1.0);
+    }
+
+    /* Map loading indicator for mobile */
+    .map-loading {
+        font-size: var(--font-size-medium);
+        padding: 8px 16px;
+    }
+
+    /* Improved canvas rendering for mobile */
+    .map-canvas, .fog-canvas, .overlay-canvas {
+        image-rendering: auto; /* Use standard rendering on mobile for better performance */
     }
 
     /* Minimap for mobile */

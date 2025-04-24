@@ -9,6 +9,7 @@
     <title>Pixel Empires</title>
     <link rel="stylesheet" href="styles/modern-ui.css">
     <link rel="stylesheet" href="styles/mobile.css">
+    <link rel="stylesheet" href="styles/world-map.css">
 </head>
 <body>
     <div id="game-container">
@@ -117,13 +118,51 @@
                     </div>
                 </div>
                 <div class="section-content">
-                    <div id="map-wrapper" class="map-wrapper">
-                        <div id="game-map" class="game-map">
-                            <!-- Map will be rendered here -->
+                    <div class="map-content-wrapper">
+                        <div class="map-main-area">
+                            <div id="map-wrapper" class="map-wrapper">
+                                <div id="game-map" class="game-map">
+                                    <!-- Map will be rendered here -->
+                                </div>
+                                <div id="minimap-container" class="minimap-container">
+                                    <div id="minimap" class="minimap"></div>
+                                    <div id="minimap-viewport" class="minimap-viewport"></div>
+                                </div>
+                            </div>
+
+                            <div class="map-controls-panel">
+                                <div class="controls-section">
+                                    <h4><span class="section-icon">🕹️</span> Map Controls</h4>
+                                    <div id="map-controls" class="button-grid">
+                                        <button id="toggle-fog" class="control-button" title="Toggle Fog of War">🌁 Toggle Fog</button>
+                                        <button id="toggle-grid" class="control-button" title="Toggle Grid">🖱️ Toggle Grid</button>
+                                        <button id="toggle-resources" class="control-button" title="Show Resources">💰 Show Resources</button>
+                                        <button id="toggle-territories" class="control-button" title="Show Territories">🇺🇸 Show Territories</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="minimap-container" class="minimap-container">
-                            <div id="minimap" class="minimap"></div>
-                            <div id="minimap-viewport" class="minimap-viewport"></div>
+
+                        <div class="location-section">
+                            <h4><span class="section-icon">📍</span> Location Information</h4>
+                            <div id="location-info" class="info-grid">
+                                <div class="info-card">
+                                    <div class="info-header">
+                                        <h5>🌾 Terrain</h5>
+                                    </div>
+                                    <div id="selected-terrain" class="info-content">No terrain selected</div>
+                                </div>
+                                <div class="info-card">
+                                    <div class="info-header">
+                                        <h5>✨ Special Location</h5>
+                                    </div>
+                                    <div id="selected-location" class="info-content">No special location selected</div>
+                                </div>
+                            </div>
+                            <div id="location-actions" class="button-grid">
+                                <button id="explore-location" class="action-button" disabled>🔎 Explore</button>
+                                <button id="interact-location" class="action-button" disabled>👋 Interact</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -168,9 +207,7 @@
                         <button class="tab-button" data-tab="research">
                             <span class="tab-icon">📚</span> Research
                         </button>
-                        <button class="tab-button" data-tab="map">
-                            <span class="tab-icon">🧭</span> Map
-                        </button>
+
                         <button class="tab-button" data-tab="diplomacy">
                             <span class="tab-icon">🤝</span> Diplomacy
                         </button>
@@ -301,61 +338,7 @@
                                 </div>
                             </div>
 
-                            <!-- Map Tab -->
-                            <div id="map-tab" class="tab-content">
-                                <div class="map-container">
-                                    <div class="tab-section map-section">
-                                        <div class="map-header">
-                                            <h4><span class="section-icon">🏔️</span> World Map</h4>
-                                            <div class="map-quick-controls">
-                                                <button id="enhanced-zoom-in" class="control-button" title="Zoom In">+</button>
-                                                <button id="enhanced-zoom-out" class="control-button" title="Zoom Out">-</button>
-                                                <button id="enhanced-center-map" class="control-button" title="Center Map">🌐</button>
-                                            </div>
-                                        </div>
-                                        <div id="enhanced-map-container" class="map-display">
-                                            <div id="enhanced-map-wrapper" class="map-display-inner">
-                                                <div id="enhanced-map"></div>
-                                            </div>
-                                            <div id="enhanced-minimap-container" class="minimap-display">
-                                                <div id="enhanced-minimap"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="map-controls-panel">
-                                        <div class="tab-section controls-section">
-                                            <h4><span class="section-icon">🕹️</span> Map Controls</h4>
-                                            <div id="map-controls" class="button-grid">
-                                                <button id="toggle-fog" class="control-button" title="Toggle Fog of War">🌁 Toggle Fog</button>
-                                                <button id="toggle-grid" class="control-button" title="Toggle Grid">🖱️ Toggle Grid</button>
-                                                <button id="toggle-resources" class="control-button" title="Show Resources">💰 Show Resources</button>
-                                                <button id="toggle-territories" class="control-button" title="Show Territories">🇺🇸 Show Territories</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="tab-section location-section">
-                                        <h4><span class="section-icon">📍</span> Location Information</h4>
-                                        <div id="location-info" class="info-grid">
-                                            <div class="info-card">
-                                                <div class="info-header">
-                                                    <h5>🌾 Terrain</h5>
-                                                </div>
-                                                <div id="selected-terrain" class="info-content">No terrain selected</div>
-                                            </div>
-                                            <div class="info-card">
-                                                <div class="info-header">
-                                                    <h5>✨ Special Location</h5>
-                                                </div>
-                                                <div id="selected-location" class="info-content">No special location selected</div>
-                                            </div>
-                                        </div>
-                                        <div id="location-actions" class="button-grid">
-                                            <button id="explore-location" class="action-button" disabled>🔎 Explore</button>
-                                            <button id="interact-location" class="action-button" disabled>👋 Interact</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
 
                             <!-- Reports Tab -->
                             <div id="reports-tab" class="tab-content">
@@ -683,8 +666,12 @@
     <script src="scripts/unit-experience.js"></script>
     <script src="scripts/weather-system.js"></script>
     <script src="scripts/combat-ui-enhancements.js"></script>
-    <script src="scripts/main.js"></script>
     <script src="scripts/mobile.js"></script>
     <script src="scripts/ui-layout.js"></script>
+    <script src="scripts/world-map.js"></script>
+    <script src="scripts/simple-minimap.js"></script>
+    <script src="scripts/cheat.js"></script>
+    <!-- Main script should be loaded last -->
+    <script src="scripts/main.js"></script>
 </body>
 </html>
